@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0B0D10">
+  <title>Recall Styleguide</title>
+  <link rel="stylesheet" href="./src/styles/tokens.css">
+  <link rel="stylesheet" href="./src/styles/components.css">
+  <style>
+    /* Styleguide-only layout. App screens should not copy these. */
+    .sg {
+      max-width: var(--layout-max);
+      margin: 0 auto;
+      padding: var(--space-10) var(--gutter) var(--space-16);
+    }
+    .sg-header { padding-bottom: var(--space-8); border-bottom: var(--border-hairline) solid var(--color-line); }
+    .sg-intro { margin: var(--space-5) 0 0; color: var(--color-text-muted); }
+    .sg-section { padding-top: var(--space-12); }
+    .sg-h {
+      display: flex; align-items: center; gap: var(--space-3);
+      margin: 0 0 var(--space-6);
+      color: var(--color-brand-text);
+    }
+    .sg-h::after { content: ""; flex: 1; height: 1px; background: var(--color-line); }
+    .sg-sub {
+      margin: var(--space-8) 0 var(--space-3);
+      font-family: var(--font-display); font-weight: var(--weight-bold);
+      font-size: var(--text-h3); line-height: var(--leading-h3);
+    }
+    .sg-note { margin: 0 0 var(--space-4); color: var(--color-text-subtle); font-size: var(--text-small); }
+    code { font-family: ui-monospace, "SF Mono", Consolas, monospace; font-size: 0.85em; color: var(--color-text-muted); }
+
+    /* colors */
+    .sw-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+    .sw { display: grid; gap: var(--space-2); }
+    .sw__chip {
+      height: 64px; border-radius: var(--radius-sm);
+      border: var(--border-hairline) solid var(--color-border-strong);
+      background: var(--sw);
+    }
+    .sw__name { font-weight: var(--weight-medium); font-size: var(--text-small); }
+    .sw__meta { color: var(--color-text-subtle); font-size: var(--text-small); line-height: 1.3; }
+    .cat-list { display: grid; gap: var(--space-2); }
+    .cat-row {
+      display: flex; align-items: center; gap: var(--space-3);
+      padding: var(--space-3); border-radius: var(--radius-md);
+      background: var(--color-surface); border: var(--border-hairline) solid var(--color-border);
+    }
+    .cat-row__chip { width: 40px; height: 40px; border-radius: var(--radius-sm); background: var(--cat); flex: none; }
+    .cat-row__text { flex: 1; display: grid; }
+    .cat-row__name { color: var(--cat); font-weight: var(--weight-medium); }
+    .cat-row .icon { color: var(--cat); }
+
+    /* type */
+    .type-list { display: grid; gap: var(--space-5); }
+    .type-item { display: grid; gap: var(--space-1); padding-bottom: var(--space-5); border-bottom: var(--border-hairline) solid var(--color-line); }
+    .type-item__meta { color: var(--color-text-subtle); font-size: var(--text-small); }
+    .t-display { font-family: var(--font-display); font-weight: 700; font-size: var(--text-display); line-height: var(--leading-display); letter-spacing: var(--tracking-tight); }
+    .t-tip { font-family: var(--font-display); font-weight: 700; font-size: var(--text-tip); line-height: var(--leading-tip); letter-spacing: var(--tracking-tight); }
+    .t-h1 { font-family: var(--font-display); font-weight: 700; font-size: var(--text-h1); line-height: var(--leading-h1); letter-spacing: var(--tracking-tight); }
+    .t-h2 { font-family: var(--font-display); font-weight: 700; font-size: var(--text-h2); line-height: var(--leading-h2); letter-spacing: var(--tracking-tight); }
+    .t-h3 { font-family: var(--font-display); font-weight: 700; font-size: var(--text-h3); line-height: var(--leading-h3); }
+    .t-semi { font-family: var(--font-display); font-weight: var(--weight-semibold); font-size: var(--text-h3); line-height: var(--leading-h3); }
+    .t-body-lg { font-size: var(--text-body-lg); line-height: var(--leading-body-lg); }
+    .t-body { font-size: var(--text-body); line-height: var(--leading-body); }
+    .t-medium { font-weight: var(--weight-medium); }
+    .t-small { font-size: var(--text-small); line-height: var(--leading-small); color: var(--color-text-muted); }
+    .t-label { color: var(--color-text-muted); }
+    .t-section { font-family: var(--font-display); font-weight: var(--weight-semibold); font-size: var(--text-body); line-height: var(--leading-body); }
+
+    /* spacing & radius */
+    .space-list { display: grid; gap: var(--space-2); }
+    .space-row { display: grid; grid-template-columns: 104px 1fr; align-items: center; gap: var(--space-3); font-size: var(--text-small); color: var(--color-text-subtle); }
+    .space-bar { height: 12px; border-radius: 2px; background: var(--color-brand); opacity: 0.85; }
+    .radius-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--space-2); }
+    .radius-item { display: grid; gap: var(--space-2); text-align: center; font-size: var(--text-small); color: var(--color-text-subtle); }
+    .radius-box { aspect-ratio: 1; background: var(--color-surface); border: var(--border-thick) solid var(--color-border-strong); }
+
+    /* icons */
+    .icon-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-2); }
+    .icon-tile {
+      display: grid; justify-items: center; gap: var(--space-2);
+      padding: var(--space-4) var(--space-1) var(--space-3);
+      border-radius: var(--radius-md); background: var(--color-surface);
+      border: var(--border-hairline) solid var(--color-border);
+      font-size: var(--text-small); color: var(--color-text-muted);
+    }
+    .icon-tile .icon { color: var(--cat); }
+    .icon-tile--ui .icon { color: var(--color-text); }
+
+    .stack { display: grid; gap: var(--space-3); }
+    .tags { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+    .examples { display: grid; gap: var(--space-4); }
+    .examples .deck { padding-bottom: var(--space-4); }
+    .examples .deck__layer { inset: var(--space-3) var(--space-2) var(--space-4); }
+
+    /* swipe card states: full-size cards shown at half scale */
+    .sg-sub--sm { font-size: var(--text-body); margin-top: var(--space-6); }
+    .sg-states { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+    .sg-state { display: grid; gap: var(--space-2); }
+    .sg-state__frame {
+      position: relative; height: 210px; overflow: hidden;
+      border-radius: var(--radius-md); border: var(--border-hairline) solid var(--color-line);
+      background: var(--color-bg);
+    }
+    .sg-state__stage {
+      position: absolute; top: var(--space-4); left: 50%;
+      width: 300px; height: 380px; margin-left: -150px;
+      transform: scale(0.45); transform-origin: top center;
+    }
+    .sg-state__label { color: var(--color-text-muted); font-size: var(--text-small); }
+    .sg-state__label code { color: var(--color-text-subtle); }
+
+    /* live example sized like a phone screen */
+    .sg-screen {
+      display: grid; grid-template-rows: 1fr auto auto; gap: var(--space-4);
+      height: 720px;
+      padding: var(--space-4) 0;
+    }
+    .sg-progress { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-3); margin-bottom: var(--space-4); }
+    .sg-progress__item { display: grid; justify-items: center; gap: var(--space-2); padding: var(--space-4) 0 var(--space-3); border-radius: var(--radius-md); background: var(--color-surface); border: var(--border-hairline) solid var(--color-border); color: var(--color-text-muted); font-size: var(--text-small); }
+    .sg-progress-live { display: grid; justify-items: center; gap: var(--space-2); color: var(--color-text-subtle); font-size: var(--text-small); }
+    .sg-arts { display: grid; gap: var(--space-3); }
+    .sg-art { display: grid; gap: var(--space-2); }
+    .sg-art__frame { display: grid; place-items: center; height: 260px; padding: var(--space-4); border-radius: var(--radius-md); background: var(--color-bg); border: var(--border-hairline) solid var(--color-line); }
+    .sg-art__frame .intro-art { width: 100%; height: 100%; }
+    .sg-art__label { color: var(--color-text-muted); font-size: var(--text-small); }
+    .sg-phone { height: 720px; border-radius: var(--radius-lg); border: var(--border-hairline) solid var(--color-border-strong); background: var(--color-bg); overflow: hidden; }
+    .sg-splash { display: grid; gap: var(--space-3); }
+    .sg-splash__frame { position: relative; height: 420px; border-radius: var(--radius-lg); border: var(--border-hairline) solid var(--color-border-strong); background: var(--color-bg); overflow: hidden; display: grid; place-items: center; color: var(--color-text-subtle); font-size: var(--text-small); }
+    .sg-splash__actions { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2); }
+    .sg-chip-states { display: grid; gap: var(--space-3); }
+    .sg-chip-state { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); background: var(--color-bg); border: var(--border-hairline) solid var(--color-line); }
+    .sg-chip-state > span { color: var(--color-text-muted); font-size: var(--text-small); }
+    .sg-chip-all { justify-content: flex-start; }
+    .sg-cloud { display: grid; gap: var(--space-4); min-height: 420px; padding: var(--space-4) 0; overflow: hidden; }
+    .sg-rules { margin: 0; padding-left: var(--space-5); display: grid; gap: var(--space-2); color: var(--color-text-muted); font-size: var(--text-small); line-height: var(--leading-small); }
+    .sg-rules strong { color: var(--color-text); font-weight: var(--weight-medium); }
+    .q { margin: 0 0 var(--space-4); font-family: var(--font-display); font-weight: 700; font-size: var(--text-h2); line-height: var(--leading-h2); letter-spacing: var(--tracking-tight); }
+
+    .sg-footer { margin-top: var(--space-16); padding-top: var(--space-6); border-top: var(--border-hairline) solid var(--color-line); color: var(--color-text-subtle); font-size: var(--text-small); }
+  </style>
+</head>
+<body>
+<main class="sg">
+
+  <header class="sg-header">
+    <h1 class="logo">Recall<span class="logo__dot">.</span></h1>
+    <p class="tagline label">Less queueing. More living.</p>
+    <p class="sg-intro">Styleguide v0.1. Every screen uses only the tokens in <code>src/styles/tokens.css</code> and the components in <code>src/styles/components.css</code> + <code>src/components/</code>. Designed at 390px.</p>
+  </header>
+
+  <!-- 01 COLORS -->
+  <section class="sg-section" aria-labelledby="s-colors">
+    <h2 class="sg-h label" id="s-colors">01 · Color</h2>
+
+    <h3 class="sg-sub">Base &amp; text</h3>
+    <div class="sw-grid" id="base-swatches"></div>
+
+    <h3 class="sg-sub">Brand</h3>
+    <p class="sg-note">UI only: buttons, toggles, links, focus, active states. Never a category.</p>
+    <div class="sw-grid" id="brand-swatches"></div>
+
+    <h3 class="sg-sub">Categories</h3>
+    <p class="sg-note">Ratio = contrast on <code>--color-surface</code>. Shown on the tag, the card edge/glow and the icon.</p>
+    <div class="cat-list" id="cat-swatches"></div>
+  </section>
+
+  <!-- 02 TYPE -->
+  <section class="sg-section" aria-labelledby="s-type">
+    <h2 class="sg-h label" id="s-type">02 · Typography</h2>
+    <p class="sg-note">Sora Bold for headings and tip titles, Sora SemiBold for small headings and numbers. Inter Regular / Medium for everything else. All self-hosted in <code>src/styles/fonts/</code>.</p>
+    <div class="type-list">
+      <div class="type-item"><span class="t-display">Recall.</span><span class="type-item__meta">Display · Sora 700 · 40/42 · <code>--text-display</code></span></div>
+      <div class="type-item"><span class="t-tip">Go for a walk.</span><span class="type-item__meta">Tip title · deck card · Sora 700 · 40/42 · <code>--text-tip</code></span></div>
+      <div class="type-item"><span class="t-h1">Read 30 pages.</span><span class="type-item__meta">H1 · compact tip cards, small phones · Sora 700 · 32/35 · <code>--text-h1</code></span></div>
+      <div class="type-item"><span class="t-h2">Why do you want to play?</span><span class="type-item__meta">H2 · screen title · Sora 700 · 24/28 · <code>--text-h2</code></span></div>
+      <div class="type-item"><span class="t-h3">Games dodged this week</span><span class="type-item__meta">H3 · section title · Sora 700 · 18/22 · <code>--text-h3</code></span></div>
+      <div class="type-item"><span class="t-semi">3 games dodged · 81 min saved</span><span class="type-item__meta">Semibold · stats, small headings · Sora 600 · 18/22 · <code>--weight-semibold</code></span></div>
+      <div class="type-item"><span class="t-body-lg">27 minutes, same as a game, zero LP lost.</span><span class="type-item__meta">Body large · tip body · Inter 400 · 17/25 · <code>--text-body-lg</code></span></div>
+      <div class="type-item"><span class="t-body">Your LP will still be there tomorrow. So will the Rift.</span><span class="type-item__meta">Body · UI copy · Inter 400 · 15/22 · <code>--text-body</code></span></div>
+      <div class="type-item"><span class="t-body t-medium">Late-night mode</span><span class="type-item__meta">Body medium · labels, buttons · Inter 500 · 15/22</span></div>
+      <div class="type-item"><span class="t-small">Sleep tips after midnight</span><span class="type-item__meta">Small · meta, helper · Inter 400 · 13/19 · <code>--text-small</code></span></div>
+      <div class="type-item"><span class="t-section">About</span><span class="type-item__meta">Section label · settings groups · Sora 600 · 15/22 · <code>.section-label</code></span></div>
+      <div class="type-item"><span class="label t-label">Tip of the day</span><span class="type-item__meta">Label · tags, small labels, hints · Inter 500 · 13 · sentence case, never all caps · <code>--text-label</code></span></div>
+    </div>
+  </section>
+
+  <!-- 03 SPACING & RADIUS -->
+  <section class="sg-section" aria-labelledby="s-space">
+    <h2 class="sg-h label" id="s-space">03 · Spacing &amp; radius</h2>
+    <p class="sg-note">4px base. Screen gutter = <code>--space-4</code> (16px).</p>
+    <div class="space-list" id="space-list"></div>
+
+    <h3 class="sg-sub">Radius</h3>
+    <div class="radius-grid">
+      <div class="radius-item"><div class="radius-box" style="border-radius: var(--radius-xs)"></div>xs · 6</div>
+      <div class="radius-item"><div class="radius-box" style="border-radius: var(--radius-sm)"></div>sm · 10</div>
+      <div class="radius-item"><div class="radius-box" style="border-radius: var(--radius-md)"></div>md · 16</div>
+      <div class="radius-item"><div class="radius-box" style="border-radius: var(--radius-lg)"></div>lg · 24</div>
+      <div class="radius-item"><div class="radius-box" style="border-radius: var(--radius-pill)"></div>pill</div>
+    </div>
+  </section>
+
+  <!-- 04 ICONS -->
+  <section class="sg-section" aria-labelledby="s-icons">
+    <h2 class="sg-h label" id="s-icons">04 · Icons</h2>
+    <p class="sg-note">Lucide only, 1.75 stroke, round caps. Sprite: <code>public/icons.svg</code>.</p>
+    <div class="icon-grid" id="cat-icons"></div>
+    <h3 class="sg-sub">UI</h3>
+    <div class="icon-grid">
+      <div class="icon-tile icon-tile--ui"><svg class="icon icon--lg"><use href="./icons.svg#settings"/></svg>settings</div>
+      <div class="icon-tile icon-tile--ui"><svg class="icon icon--lg"><use href="./icons.svg#sparkles"/></svg>sparkles</div>
+      <div class="icon-tile icon-tile--ui"><svg class="icon icon--lg"><use href="./icons.svg#timer"/></svg>timer</div>
+      <div class="icon-tile icon-tile--ui"><svg class="icon icon--lg"><use href="./icons.svg#moon-star"/></svg>moon-star</div>
+      <div class="icon-tile icon-tile--ui"><svg class="icon icon--lg"><use href="./icons.svg#check"/></svg>check</div>
+      <div class="icon-tile icon-tile--ui"><svg class="icon icon--lg"><use href="./icons.svg#chevron-right"/></svg>chevron</div>
+      <div class="icon-tile icon-tile--ui"><svg class="icon icon--lg"><use href="./icons.svg#arrow-left"/></svg>arrow-left</div>
+      <div class="icon-tile icon-tile--ui"><svg class="icon icon--lg"><use href="./icons.svg#arrow-right"/></svg>arrow-right</div>
+    </div>
+  </section>
+
+  <!-- 05 COMPONENTS -->
+  <section class="sg-section" aria-labelledby="s-comp">
+    <h2 class="sg-h label" id="s-comp">05 · Components</h2>
+
+    <h3 class="sg-sub">Swipe card</h3>
+    <p class="sg-note">The tip deck on the main screen. React component <code>src/components/SwipeDeck.jsx</code>, motion values from the <code>--swipe-*</code>, <code>--deck-*</code> and <code>--duration-*</code> tokens.</p>
+
+    <h4 class="sg-sub sg-sub--sm">States</h4>
+    <div class="sg-states" id="swipe-states"></div>
+
+    <h4 class="sg-sub sg-sub--sm">Live example · main screen layout</h4>
+    <p class="sg-note">Swipe the top card left or right with a finger or the mouse. Arrow keys work on a focused card. Tips come from <code>content.json</code>, all categories, shuffled, no repeats until all 160 were shown.</p>
+    <div class="sg-screen" id="swipe-live"></div>
+
+    <h4 class="sg-sub sg-sub--sm">Usage rules</h4>
+    <ul class="sg-rules">
+      <li><strong>Content:</strong> category tag (category color + icon), title in Sora, subtext in Inter. Glassy dark card, 2 cards visible behind it.</li>
+      <li><strong>Tip of the day</strong> is its own block under the deck. Never inside a card.</li>
+      <li><strong>Both directions = next tip.</strong> No like/dislike, no labels or icons while dragging, no green/red.</li>
+      <li><strong>Drag glow</strong> uses the card's category color, same for left and right, and grows with the drag (<code>--swipe-glow-*</code>).</li>
+      <li><strong>Next card:</strong> cards are see-through glass (<code>--color-surface-glass</code>, 50%). Cards waiting behind show only their edge; the next one fades its content in as the top card is dragged, and back out if the drag snaps back.</li>
+      <li><strong>Swipe counts</strong> past <code>--swipe-threshold</code> of the card width, or on a fast flick. Shorter drags snap back.</li>
+      <li><strong>Infinite deck:</strong> only the categories picked in onboarding, random order, no repeats until every tip was shown, never runs out.</li>
+      <li><strong>Keys:</strong> cards are keyed by tip id, never by array index.</li>
+      <li><strong>Mobile:</strong> card fills most of the screen with the 16px gutter; the page doesn't scroll or bounce while swiping (<code>lockScroll</code>); short vibration on a successful swipe where supported.</li>
+      <li><strong>Reduce motion:</strong> no tilt, no fly-out or shift animation; the next tip just appears.</li>
+    </ul>
+
+    <h3 class="sg-sub">Category tags</h3>
+    <div class="tags" id="tags"></div>
+
+    <h3 class="sg-sub">Buttons</h3>
+    <div class="stack">
+      <button class="btn btn--primary" type="button">Give me something else</button>
+      <button class="btn btn--secondary" type="button">I'm already in queue</button>
+      <button class="btn btn--primary" type="button" disabled>Disabled</button>
+    </div>
+
+    <h3 class="sg-sub">Onboarding chips</h3>
+    <p class="sg-note">Multi-select. Selected = brand outline, soft fill, check icon. Tap to toggle.</p>
+    <p class="q">Why do you want to play?</p>
+    <div class="chips" id="chips">
+      <button class="chip" type="button" aria-pressed="true"><svg class="icon chip__check"><use href="./icons.svg#check"/></svg>Tilted</button>
+      <button class="chip" type="button" aria-pressed="false"><svg class="icon chip__check"><use href="./icons.svg#check"/></svg>Bored</button>
+      <button class="chip" type="button" aria-pressed="true"><svg class="icon chip__check"><use href="./icons.svg#check"/></svg>Friends are calling</button>
+      <button class="chip" type="button" aria-pressed="false"><svg class="icon chip__check"><use href="./icons.svg#check"/></svg>Event FOMO</button>
+      <button class="chip" type="button" aria-pressed="false"><svg class="icon chip__check"><use href="./icons.svg#check"/></svg>Just habit</button>
+    </div>
+
+    <h3 class="sg-sub">Splash</h3>
+    <p class="sg-note">Shown on every launch: only the "Recall." wordmark (Sora, <code>--text-splash</code>), centered on the app background (<code>--color-bg</code>, same as the first HTML frame and the future PWA launch screen, so there's no white flash). Fades and glows in over <code>--duration-splash-in</code>, stays <code>--duration-splash-first</code> on first launch (then onboarding) or <code>--duration-splash-return</code> later (then the main screen), fades out over <code>--duration-splash-out</code> on top of the next screen. Tap (or Enter / Space / Esc) skips it. Reduce motion: plain fade, no scaling or growing glow. <code>Splash.jsx</code></p>
+    <div class="sg-splash" id="splash-demo"></div>
+
+    <h3 class="sg-sub">Onboarding intro</h3>
+    <p class="sg-note">Three swipeable intro screens: graphic in the top half, headline (Sora, <code>--text-tip</code>), subtext (Inter). A progress button moves forward and fills its ring a third per screen; "Skip" jumps to the category picker. <code>IntroCarousel.jsx</code></p>
+
+    <h4 class="sg-sub sg-sub--sm">Progress button · states</h4>
+    <div class="sg-progress" id="progress-states"></div>
+    <p class="sg-note">Ring in brand purple (<code>--progress-ring-*</code>), fills over <code>--duration-progress</code>. On the last screen the arrow morphs into a checkmark (<code>--duration-icon-morph</code>) and the core turns brand. Tap the live one to step through:</p>
+    <div class="sg-progress-live" id="progress-live"></div>
+
+    <h4 class="sg-sub sg-sub--sm">Intro graphics</h4>
+    <p class="sg-note">SVG in token colors, category colors as accents. Slow loops (<code>--duration-ambient*</code>) stop under "reduce motion". <code>IntroArt.jsx</code></p>
+    <div class="sg-arts" id="intro-arts"></div>
+
+    <h4 class="sg-sub sg-sub--sm">Intro screen layout · live</h4>
+    <p class="sg-note">Swipe between screens or use the button. Finishing or "Skip" restarts the demo here; in the app it opens the category picker.</p>
+    <div class="sg-phone" id="intro-live"></div>
+
+    <h3 class="sg-sub">Category cloud chip</h3>
+    <p class="sg-note">Onboarding picker. Big pill (<code>--chip-cloud-height</code>), category icon + name, toggle button (<code>aria-pressed</code>). Unselected: dark surface, subtle border, muted icon and text. Selected: filled with its category color, dark text (≥7:1 on every category color), a checkmark draws itself in while the label slides over, the edge springs out (<code>--spring-morph-*</code>), the chip grows to <code>--chip-select-scale</code> (<code>--spring-select-*</code>) and its neighbours glide to make room. Short vibration on tap. <code>CategoryCloud.jsx</code></p>
+    <h4 class="sg-sub sg-sub--sm">States</h4>
+    <div class="sg-chip-states" id="chip-states"></div>
+    <h4 class="sg-sub sg-sub--sm">Selected · all 8 colors</h4>
+    <div class="cloud sg-chip-all" id="chip-all"></div>
+    <h4 class="sg-sub sg-sub--sm">Live · gravity on open</h4>
+    <p class="sg-note">Chips fall from <code>--chip-drop-distance</code> above in random order, <code>--chip-drop-stagger</code> apart, fading in over <code>--chip-drop-fade</code>, and settle softly with one small overshoot (<code>--spring-drop-*</code>, damping ratio about 0.76), all within about 0.65s. Some chips get a random tilt up to <code>--chip-tilt-max</code> (<code>--chip-tilt-share</code> of them). Reduce motion: a simple fade (<code>--duration-chip-fade</code>). Tap chips to select.</p>
+    <div class="sg-cloud" id="chip-cloud"></div>
+
+    <h3 class="sg-sub">Category picker</h3>
+    <p class="sg-note">Onboarding and settings. Chips in two even columns: category icon in its color, label, check when selected. Order follows <code>content.json</code>. In settings (<code>keepOne</code>) the last selected chip can't be turned off. <code>CategoryPicker.jsx</code></p>
+    <div id="category-picker"></div>
+
+    <h3 class="sg-sub">Icon button &amp; screen header</h3>
+    <p class="sg-note">44px round icon button, always with an accessible label. Screen header = back button, centered title (gets focus when the screen opens), spacer. <code>Buttons.jsx</code>, <code>ScreenHeader.jsx</code></p>
+    <div class="stack" id="screen-header-demo"></div>
+
+    <h3 class="sg-sub">Two-step button</h3>
+    <p class="sg-note">For destructive actions like resetting the app. First tap arms it (brand outline + soft fill, new label), second tap within 4 seconds runs it, otherwise it disarms.</p>
+    <div id="two-step-demo"></div>
+
+    <h3 class="sg-sub">Settings rows &amp; toggles</h3>
+    <div class="rows">
+      <a class="row" href="#s-comp">
+        <svg class="icon row__icon"><use href="./icons.svg#settings"/></svg>
+        <span class="row__text"><span class="row__label">Settings</span></span>
+        <svg class="icon row__chevron"><use href="./icons.svg#chevron-right"/></svg>
+      </a>
+      <div class="row">
+        <svg class="icon row__icon"><use href="./icons.svg#moon-star"/></svg>
+        <span class="row__text"><span class="row__label" id="lbl-night">Late-night mode</span><span class="row__desc">Sleep tips after midnight</span></span>
+        <button class="toggle" type="button" role="switch" aria-checked="true" aria-labelledby="lbl-night"></button>
+      </div>
+      <div class="row">
+        <svg class="icon row__icon"><use href="./icons.svg#timer"/></svg>
+        <span class="row__text"><span class="row__label" id="lbl-loss">Lost 2 in a row?</span><span class="row__desc">Stronger stop-tips after a losing streak</span></span>
+        <button class="toggle" type="button" role="switch" aria-checked="false" aria-labelledby="lbl-loss"></button>
+      </div>
+      <a class="row" href="#s-comp">
+        <svg class="icon row__icon"><use href="./icons.svg#sparkles"/></svg>
+        <span class="row__text"><span class="row__label">Categories</span></span>
+        <span class="row__value">8 of 8</span>
+        <svg class="icon row__chevron"><use href="./icons.svg#chevron-right"/></svg>
+      </a>
+    </div>
+  </section>
+
+  <!-- 06 EXAMPLES -->
+  <section class="sg-section" aria-labelledby="s-ex">
+    <h2 class="sg-h label" id="s-ex">06 · Tip cards</h2>
+    <p class="sg-note">One per category, pulled from <code>content.json</code> (IDs in <code>EXAMPLE_IDS</code>, <code>src/styleguide.jsx</code>).</p>
+    <div class="examples" id="examples"></div>
+  </section>
+
+  <footer class="sg-footer">
+    Recall is a fan-made project, not endorsed by Riot Games. League of Legends is a trademark of Riot Games, Inc. Icons: Lucide (ISC).
+  </footer>
+</main>
+
+<script type="module" src="./src/styleguide.jsx"></script>
+</body>
+</html>

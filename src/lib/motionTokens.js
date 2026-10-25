@@ -1,0 +1,60 @@
+// Reads the swipe/deck motion values from tokens.css so framer-motion gets
+// numbers while tokens.css stays the single source. Read on demand: values
+// change when the "reduce motion" setting changes.
+
+const css = () => getComputedStyle(document.documentElement);
+const num = (s, name) => {
+  const n = parseFloat(css().getPropertyValue(name));
+  return Number.isFinite(n) ? n : s;
+};
+const ms = (fallback, name) => num(fallback, name) / 1000; // framer wants seconds
+const bezier = (fallback, name) => {
+  const m = css().getPropertyValue(name).match(/cubic-bezier\(([^)]+)\)/);
+  return m ? m[1].split(",").map(Number) : fallback;
+};
+
+const spring = (prefix, stiffness, damping) => ({
+  type: "spring",
+  stiffness: num(stiffness, `${prefix}-stiffness`),
+  damping: num(damping, `${prefix}-damping`),
+});
+
+export function readMotionTokens() {
+  return {
+    threshold: num(0.28, "--swipe-threshold"),
+    flickVelocity: num(500, "--swipe-flick-velocity"),
+    flickMin: num(30, "--swipe-flick-min"),
+    rotateMax: num(10, "--swipe-rotate-max"),
+    flyDistance: num(1.4, "--swipe-fly-distance"),
+    swipeOut: ms(320, "--duration-swipe-out"),
+    settle: ms(260, "--duration-swipe-settle"),
+    deckShift: ms(300, "--duration-deck-shift"),
+    introSlide: ms(420, "--duration-intro-slide"),
+    splashFirst: ms(2000, "--duration-splash-first"),
+    splashReturn: ms(1000, "--duration-splash-return"),
+    splashOut: ms(450, "--duration-splash-out"),
+    chip: {
+      checkSlot: num(30, "--chip-check-slot"),
+      tiltMax: num(5, "--chip-tilt-max"),
+      tiltShare: num(0.45, "--chip-tilt-share"),
+      dropDistance: num(120, "--chip-drop-distance"),
+      dropFade: ms(220, "--chip-drop-fade"),
+      dropStagger: ms(32, "--chip-drop-stagger"),
+      drop: spring("--spring-drop", 340, 28),
+      select: spring("--spring-select", 620, 22),
+      morph: spring("--spring-morph", 420, 34),
+      selectScale: num(1.04, "--chip-select-scale"),
+      pressScale: num(0.95, "--chip-press-scale"),
+      fade: ms(300, "--duration-chip-fade"),
+      haptic: num(8, "--haptic-chip"),
+    },
+    easeOut: bezier([0.22, 1, 0.36, 1], "--ease-out"),
+    easeIn: bezier([0.55, 0, 1, 0.45], "--ease-in"),
+    haptic: num(12, "--haptic-swipe"),
+    poses: [
+      { x: 0, y: 0, rotate: 0, scale: 1 },
+      { x: num(10, "--deck-1-x"), y: num(12, "--deck-1-y"), rotate: num(3, "--deck-1-rotate"), scale: num(0.97, "--deck-1-scale") },
+      { x: num(-8, "--deck-2-x"), y: num(22, "--deck-2-y"), rotate: num(-4, "--deck-2-rotate"), scale: num(0.94, "--deck-2-scale") },
+    ],
+  };
+}

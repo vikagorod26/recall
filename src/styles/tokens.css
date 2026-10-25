@@ -1,0 +1,261 @@
+/* ==========================================================================
+   Recall — design tokens
+   Every screen uses ONLY these variables. Need a new value? Add a token here
+   first, then show it in styleguide.html.
+   Theme: dark only.
+   ========================================================================== */
+
+/* ---- Fonts: self-hosted in ./fonts (SIL OFL 1.1), no network needed -------
+   Both are variable fonts: one file per subset covers the listed weights.
+   Source: Google Fonts (Inter v20, Sora v17), latin + latin-ext subsets. */
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 400 500;
+  font-display: swap;
+  src: url("./fonts/inter-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 400 500;
+  font-display: swap;
+  src: url("./fonts/inter-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "Sora";
+  font-style: normal;
+  font-weight: 600 700;
+  font-display: swap;
+  src: url("./fonts/sora-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Sora";
+  font-style: normal;
+  font-weight: 600 700;
+  font-display: swap;
+  src: url("./fonts/sora-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+:root {
+  color-scheme: dark;
+
+  /* ---- Base colors ------------------------------------------------------ */
+  --color-bg: #0B0D10;              /* page background */
+  --color-surface: #16181F;         /* cards, rows, sheets */
+  --color-surface-raised: #1D2029;  /* pressed / hovered surface, toggle track off */
+  --color-surface-glass: rgba(22, 24, 31, 0.5);  /* tip cards: cards below show through while swiping */
+
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-border-strong: rgba(255, 255, 255, 0.16);
+  --color-line: rgba(255, 255, 255, 0.06);       /* thin decorative lines */
+
+  /* ---- Text (contrast measured on --color-surface) ---------------------- */
+  --color-text: #E8E8F1;            /* 14.6:1 — headings, body */
+  --color-text-muted: #A4A7BA;      /* 7.4:1  — secondary copy */
+  --color-text-subtle: #82869B;     /* 4.9:1 — captions, hints, labels */
+  --color-text-on-brand: #FFFFFF;   /* 4.6:1 on --color-brand */
+  --color-text-on-category: #0B0D10;/* dark text on solid category pills, ≥7:1 */
+
+  /* ---- Brand: UI only (buttons, toggles, links, focus, active) ---------- */
+  --color-brand: #6D5BFF;
+  --color-brand-hover: #5F4EF8;     /* darker on hover so white text stays ≥4.5:1 */
+  --color-brand-pressed: #5241E0;
+  --color-brand-accent: #B880FF;
+  --color-brand-text: #9C8FFF;      /* brand-colored text/links, 6.6:1 */
+  --color-brand-soft: rgba(109, 91, 255, 0.16);  /* selected chip fill */
+  --color-focus: #B880FF;
+
+  /* ---- Categories: never use brand purple for these --------------------- */
+  /* All ≥6.4:1 on --color-surface; dark text on them ≥7:1. */
+  --cat-sports:   #C6E94F;  /* lime     · dumbbell     */
+  --cat-movies:   #FF6B7D;  /* rose     · clapperboard */
+  --cat-reading:  #F7C948;  /* yellow   · book-open    */
+  --cat-outdoors: #3FDB95;  /* mint     · trees        */
+  --cat-cooking:  #FF9442;  /* orange   · chef-hat     */
+  --cat-sleep:    #5EA8FF;  /* sky blue · moon         */
+  --cat-music:    #F57AD0;  /* pink     · headphones   */
+  --cat-friends:  #2FD3E6;  /* cyan     · users        */
+
+  /* --cat is set per element via [data-category]; defaults to brand-neutral */
+  --cat: var(--color-text-muted);
+
+  /* ---- Typography ------------------------------------------------------- */
+  --font-display: "Sora", system-ui, sans-serif;   /* 600 / 700 */
+  --font-body: "Inter", system-ui, sans-serif;     /* 400 / 500 */
+
+  --weight-regular: 400;   /* Inter */
+  --weight-medium: 500;    /* Inter */
+  --weight-semibold: 600;  /* Sora: smaller headings, numbers */
+  --weight-bold: 700;      /* Sora: titles, logo */
+
+  /* size / line-height pairs */
+  --text-display: 2.5rem;    --leading-display: 1.05;   /* 40 — logo, hero */
+  --text-tip: 2.5rem;        --leading-tip: 1.04;       /* 40 — tip title on the deck card */
+  --text-h1: 2rem;           --leading-h1: 1.1;         /* 32 — compact tip cards, small phones */
+  --text-h2: 1.5rem;         --leading-h2: 1.15;        /* 24 — screen titles */
+  --text-h3: 1.125rem;       --leading-h3: 1.25;        /* 18 — section titles, small card titles */
+  --text-body-lg: 1.0625rem; --leading-body-lg: 1.45;   /* 17 — tip body */
+  --text-body: 0.9375rem;    --leading-body: 1.5;       /* 15 — UI copy */
+  --text-small: 0.8125rem;   --leading-small: 1.45;     /* 13 — meta, helper */
+  --text-label: 0.8125rem;   --leading-label: 1.3;      /* 13 — tags, small labels, hints (sentence case) */
+
+  --tracking-tight: -0.02em;   /* Sora headings */
+  --tracking-label: 0.01em;    /* tags, labels */
+
+  /* ---- Spacing (4px base) ----------------------------------------------- */
+  --space-1: 0.25rem;  /*  4 */
+  --space-2: 0.5rem;   /*  8 */
+  --space-3: 0.75rem;  /* 12 */
+  --space-4: 1rem;     /* 16 — screen gutter */
+  --space-5: 1.25rem;  /* 20 */
+  --space-6: 1.5rem;   /* 24 */
+  --space-8: 2rem;     /* 32 */
+  --space-10: 2.5rem;  /* 40 */
+  --space-12: 3rem;    /* 48 */
+  --space-16: 4rem;    /* 64 */
+
+  /* ---- Radius ----------------------------------------------------------- */
+  --radius-xs: 6px;      /* small swatches */
+  --radius-sm: 10px;     /* inner panels */
+  --radius-md: 16px;     /* rows, inputs */
+  --radius-lg: 24px;     /* tip cards */
+  --radius-pill: 999px;  /* tags, chips, buttons, toggles */
+
+  /* ---- Borders ---------------------------------------------------------- */
+  --border-hairline: 1px;
+  --border-thick: 1.5px;  /* outlined buttons, selected chips */
+
+  /* ---- Icons (Lucide, one set) ------------------------------------------ */
+  --icon-stroke: 1.75;
+  --icon-sm: 16px;
+  --icon-md: 20px;
+  --icon-lg: 28px;
+  --icon-xl: 40px;
+
+  /* ---- Shadows & glows -------------------------------------------------- */
+  --shadow-card: 0 24px 48px -16px rgba(0, 0, 0, 0.6), 0 2px 6px rgba(0, 0, 0, 0.4);
+  --shadow-inset-top: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  --glow-brand: 0 0 24px rgba(109, 91, 255, 0.45);
+  --glow-brand-soft: 0 0 0 4px rgba(109, 91, 255, 0.18);
+  /* category glow: uses the element's --cat */
+  /* category glow/edge: see the ":root, [data-category]" rule below */
+
+  /* ---- Textures & backgrounds ------------------------------------------- */
+  --texture-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --bg-glow-brand: radial-gradient(60% 40% at 50% 0%, rgba(109, 91, 255, 0.22), transparent 70%);
+
+  /* ---- Motion ----------------------------------------------------------- */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-fast: 150ms;
+  --duration-base: 250ms;
+  --duration-slow: 400ms;
+  --ease-in: cubic-bezier(0.55, 0, 1, 0.45);     /* things leaving the screen */
+
+  /* ---- Swipe deck --------------------------------------------------------
+     Read at runtime by src/lib/motionTokens.js (framer-motion needs numbers).
+     Keep units exactly as written: ms, deg, px, plain numbers. */
+  --swipe-threshold: 0.28;          /* share of card width that counts as a swipe */
+  --swipe-flick-velocity: 500;      /* px/s: a fast short flick also counts */
+  --swipe-flick-min: 30px;          /* ...but only after moving at least this far */
+  --swipe-rotate-max: 10deg;        /* card tilt at one full card width of drag */
+  --swipe-fly-distance: 1.4;        /* fly-out distance, in card widths */
+  --swipe-glow-strength: 55%;       /* category color share in the drag glow */
+  --swipe-glow-blur: 56px;          /* drag glow spread */
+  --duration-swipe-out: 320ms;      /* fly-out */
+  --duration-swipe-settle: 260ms;   /* snap back after a short drag */
+  --duration-deck-shift: 300ms;     /* next card moves up to the top */
+  --haptic-swipe: 12;               /* ms of vibration on a successful swipe */
+
+  /* ---- Category cloud (onboarding picker) --------------------------------
+     Springs are framer-motion springs: stiffness / damping (plain numbers). */
+  --chip-cloud-height: 64px;        /* big pill chip height */
+  --chip-check-slot: 30px;          /* room the checkmark takes when selected (20px icon + gap) */
+  --chip-tilt-max: 5deg;            /* largest random tilt */
+  --chip-tilt-share: 0.45;          /* share of chips that get a tilt */
+  --chip-drop-fade: 220ms;          /* opacity while falling */
+  --chip-drop-distance: 120px;      /* how far above the chips start falling */
+  --chip-drop-stagger: 32ms;        /* delay between chips; 8 chips ≈ 0.25s + landing ≈ 0.6s total */
+  --spring-drop-stiffness: 340;     /* falling + soft landing (damping ratio ≈ 0.76: one gentle settle, no hard bounce) */
+  --spring-drop-damping: 28;
+  --spring-select-stiffness: 620;   /* select: grow + fill */
+  --spring-select-damping: 22;
+  --spring-morph-stiffness: 420;    /* chip edge + neighbours making room */
+  --spring-morph-damping: 34;
+  --chip-select-scale: 1.04;        /* selected chips sit slightly bigger */
+  --chip-press-scale: 0.95;         /* while the finger is down */
+  --duration-chip-fade: 300ms;      /* reduce motion: simple fade-in */
+  --haptic-chip: 8;                 /* ms of vibration on tap */
+
+  /* ---- Splash ------------------------------------------------------------- */
+  --text-splash: 3.5rem;            /* 56 — splash wordmark */
+  --duration-splash-first: 2000ms;  /* first launch: splash stays this long, then fades out */
+  --duration-splash-return: 1000ms; /* later launches */
+  --duration-splash-in: 700ms;      /* fade-in + glow */
+  --duration-splash-out: 450ms;     /* fade-out into the next screen */
+  --splash-glow-size: 360px;
+
+  /* ---- Onboarding intro --------------------------------------------------- */
+  --progress-ring-size: 72px;       /* round "next" button incl. its ring */
+  --progress-ring-stroke: 3px;
+  --progress-core-size: 56px;       /* the button inside the ring */
+  --duration-progress: 500ms;       /* ring filling to the next third */
+  --duration-icon-morph: 320ms;     /* arrow -> checkmark */
+  --duration-intro-slide: 420ms;    /* intro screens sliding */
+  --intro-art-max: 340px;           /* largest size of the intro graphic */
+  /* slow ambient loops in the intro graphics (stopped under reduce motion) */
+  --duration-ambient-fast: 3.2s;    /* star twinkle */
+  --duration-ambient: 6s;           /* float, ring pulse */
+  --duration-ambient-slow: 60s;     /* orbit spin */
+
+  /* cards waiting behind the top one */
+  --deck-1-x: 10px;   --deck-1-y: 12px;   --deck-1-rotate: 3deg;   --deck-1-scale: 0.97;
+  --deck-2-x: -8px;   --deck-2-y: 22px;   --deck-2-rotate: -4deg;  --deck-2-scale: 0.94;
+
+  /* ---- Layout ----------------------------------------------------------- */
+  --layout-max: 430px;     /* app column; designed at 390 */
+  --gutter: var(--space-4);
+  --tap-min: 44px;
+}
+
+/* Category mapping: put data-category on any element to set --cat */
+[data-category="sports"]   { --cat: var(--cat-sports); }
+[data-category="movies"]   { --cat: var(--cat-movies); }
+[data-category="reading"]  { --cat: var(--cat-reading); }
+[data-category="outdoors"] { --cat: var(--cat-outdoors); }
+[data-category="cooking"]  { --cat: var(--cat-cooking); }
+[data-category="sleep"]    { --cat: var(--cat-sleep); }
+[data-category="music"]    { --cat: var(--cat-music); }
+[data-category="friends"]  { --cat: var(--cat-friends); }
+
+/* Tokens built from --cat. A custom property that uses var() is resolved where
+   it's declared, so these are re-declared on every [data-category] element;
+   declared on :root only, they'd stay the neutral default color everywhere. */
+:root,
+[data-category] {
+  --glow-cat: 0 0 40px -8px color-mix(in srgb, var(--cat) 45%, transparent);
+  --edge-cat: inset 0 0 0 1px color-mix(in srgb, var(--cat) 28%, transparent);
+  --bg-glow-cat: radial-gradient(80% 60% at 100% 100%, color-mix(in srgb, var(--cat) 14%, transparent), transparent 70%);
+  --sheen-cat: linear-gradient(180deg, color-mix(in srgb, var(--cat) 4%, transparent), transparent 45%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0ms;
+    --duration-base: 0ms;
+    --duration-slow: 0ms;
+    --duration-swipe-out: 0ms;
+    --duration-swipe-settle: 0ms;
+    --duration-deck-shift: 0ms;
+    --swipe-rotate-max: 0deg;
+    --deck-1-rotate: 0deg;
+    --deck-2-rotate: 0deg;
+    --duration-progress: 0ms;
+    --duration-icon-morph: 0ms;
+    --duration-intro-slide: 0ms;
+  }
+}

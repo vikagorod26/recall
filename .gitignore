@@ -1,0 +1,17 @@
+# dependencies and build output (rebuilt by GitHub Actions)
+node_modules/
+dist/
+dev-dist/
+
+# local tool settings, not part of the app
+.claude/
+.impeccable/
+
+# secrets and OS / editor clutter
+.env
+.env.*
+*.log
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

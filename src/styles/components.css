@@ -1,0 +1,824 @@
+/* ==========================================================================
+   Recall — shared components. Uses tokens.css only.
+   ========================================================================== */
+
+/* ---- Base ---------------------------------------------------------------- */
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background-color: var(--color-bg);
+  background-image: var(--texture-grain), var(--bg-glow-brand);
+  background-repeat: repeat, no-repeat;
+  background-attachment: fixed, scroll;
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-weight: var(--weight-regular);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 3px;
+}
+
+.icon {
+  width: var(--icon-md);
+  height: var(--icon-md);
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: var(--icon-stroke);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.icon--sm { width: var(--icon-sm); height: var(--icon-sm); }
+.icon--lg { width: var(--icon-lg); height: var(--icon-lg); }
+.icon--xl { width: var(--icon-xl); height: var(--icon-xl); }
+
+/* small label: sentence case, never all caps */
+.label {
+  font-family: var(--font-body);
+  font-weight: var(--weight-medium);
+  font-size: var(--text-label);
+  line-height: var(--leading-label);
+  letter-spacing: var(--tracking-label);
+}
+
+/* ---- Logo ---------------------------------------------------------------- */
+.logo {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: var(--weight-bold);
+  font-size: var(--text-display);
+  line-height: var(--leading-display);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text);
+}
+.logo__dot { color: var(--color-brand); }
+.logo--sm { font-size: var(--text-h2); }
+
+.tagline {
+  margin: var(--space-2) 0 0;
+  color: var(--color-text-subtle);
+}
+
+/* ---- Category tag --------------------------------------------------------- */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3) var(--space-1) var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--cat);
+  color: var(--color-text-on-category);
+  font-weight: var(--weight-medium);
+  font-size: var(--text-label);
+  line-height: var(--leading-label);
+  letter-spacing: var(--tracking-label);
+  white-space: nowrap;
+}
+.tag .icon { width: 14px; height: 14px; stroke-width: 2; }
+
+/* ---- Tip card + deck ------------------------------------------------------ */
+.deck {
+  position: relative;
+  isolation: isolate;
+  padding: var(--space-3) var(--space-2) var(--space-6);
+}
+
+/* cards waiting behind the top one; each carries its own data-category */
+.deck__layer {
+  position: absolute;
+  inset: var(--space-3) var(--space-2) var(--space-6);
+  z-index: -1;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);   /* no glow: it would tint the card on top */
+  border: var(--border-hairline) solid color-mix(in srgb, var(--cat) 40%, transparent);
+  box-shadow: var(--shadow-card);
+  transition: transform var(--duration-slow) var(--ease-out);
+}
+.deck__layer--1 { transform: translate(var(--deck-1-x), var(--deck-1-y)) rotate(var(--deck-1-rotate)); opacity: 0.85; }
+.deck__layer--2 { transform: translate(var(--deck-2-x), var(--deck-2-y)) rotate(var(--deck-2-rotate)); opacity: 0.55; z-index: -2; }
+
+.tip-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-height: 420px;
+  padding: var(--space-6) var(--space-5) var(--space-5);
+  border-radius: var(--radius-lg);
+  border: var(--border-hairline) solid color-mix(in srgb, var(--cat) 30%, var(--color-border));
+  background:
+    var(--texture-grain),
+    var(--bg-glow-cat),
+    var(--sheen-cat),
+    var(--color-surface-glass);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  box-shadow: var(--shadow-card), var(--glow-cat), var(--shadow-inset-top);
+  overflow: hidden;
+}
+/* thin light line along the top edge, in the category color */
+.tip-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: var(--space-6);
+  right: var(--space-6);
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--cat), transparent);
+  opacity: 0.8;
+}
+.tip-card--compact { min-height: 0; gap: var(--space-3); }
+
+.tip-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+.tip-card__time {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--color-text-subtle);
+  font-size: var(--text-small);
+  font-weight: var(--weight-medium);
+}
+
+.tip-card__title {
+  margin: var(--space-2) 0 0;
+  font-family: var(--font-display);
+  font-weight: var(--weight-bold);
+  font-size: var(--text-tip);
+  line-height: var(--leading-tip);
+  letter-spacing: var(--tracking-tight);
+  text-wrap: balance;
+}
+.tip-card--compact .tip-card__title {
+  margin: var(--space-1) 0 0;
+  font-size: var(--text-h1);
+  line-height: var(--leading-h1);
+}
+
+.tip-card__body {
+  margin: 0;
+  max-width: 30ch;
+  color: var(--color-text-muted);
+  font-size: var(--text-body-lg);
+  line-height: var(--leading-body-lg);
+  text-wrap: pretty;
+}
+.tip-card--compact .tip-card__body {
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+}
+
+.tip-card__foot {
+  margin-top: auto;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+.tip-card__icon {
+  color: var(--cat);
+  margin-left: auto;
+}
+
+/* ---- Swipe deck (src/components/SwipeDeck.jsx) ---------------------------- */
+.swipe-deck {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  isolation: isolate;
+}
+.swipe-deck__slot {
+  position: absolute;
+  inset: 0;
+}
+.swipe-card {
+  position: relative;
+  height: 100%;
+  border-radius: var(--radius-lg);
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.swipe-card:active { cursor: grabbing; }
+/* framer-motion sets touch-action: pan-y inline (page can scroll vertically
+   over the card). On a full screen deck nothing may scroll: lock it. */
+.swipe-deck--locked .swipe-card { touch-action: none !important; }
+.swipe-card:focus-visible { outline-offset: 4px; }
+.swipe-card .tip-card { height: 100%; min-height: 0; }
+
+/* drag glow: same category color both ways; opacity follows the drag */
+.swipe-card__glow {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  box-shadow:
+    0 0 var(--swipe-glow-blur) color-mix(in srgb, var(--cat) var(--swipe-glow-strength), transparent),
+    inset 0 0 0 1px color-mix(in srgb, var(--cat) 70%, transparent);
+}
+
+/* cards waiting behind the top one show only their category edge */
+.tip-card > * { transition: opacity var(--duration-deck-shift) var(--ease-out); }
+/* --reveal (0..1) is set on the next card while the top one is dragged */
+.tip-card--back > * { opacity: var(--reveal, 0); }
+.swipe-deck__slot[data-depth="1"] .tip-card--back > * { transition: none; } /* follow the finger */
+/* waiting cards: same glass, no category glow bleeding through the card on top */
+.tip-card--back {
+  background: var(--texture-grain), var(--color-surface-glass);
+  box-shadow: var(--shadow-card);
+}
+
+/* ---- Tip of the day (standalone, above the deck) -------------------------- */
+.daily {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--texture-grain), var(--color-surface);
+  border: var(--border-hairline) solid color-mix(in srgb, var(--color-brand) 35%, var(--color-border));
+  box-shadow: var(--shadow-inset-top);
+}
+.daily__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+.daily__label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-brand-text);
+}
+.daily__until {
+  color: var(--color-text-subtle);
+  font-size: var(--text-small);
+}
+.daily__text {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: var(--weight-bold);
+  font-size: var(--text-h3);
+  line-height: var(--leading-h3);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text);
+}
+.daily__meta {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+}
+
+/* ---- Swipe hint (text only; the gesture is on the card) ------------------- */
+.deck + .swipe-hint { margin-top: var(--space-5); }
+.swipe-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  color: var(--color-text-subtle);
+}
+
+/* ---- Buttons -------------------------------------------------------------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: 100%;
+  min-height: 52px;
+  padding: 0 var(--space-6);
+  border-radius: var(--radius-pill);
+  border: var(--border-thick) solid transparent;
+  font-family: var(--font-body);
+  font-weight: var(--weight-medium);
+  font-size: var(--text-body);
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-out),
+              box-shadow var(--duration-fast) var(--ease-out),
+              transform var(--duration-fast) var(--ease-out);
+}
+.btn:active { transform: scale(0.98); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
+
+.btn--primary {
+  background: var(--color-brand);
+  color: var(--color-text-on-brand);
+  box-shadow: var(--glow-brand);
+}
+.btn--primary:hover:not(:disabled) { background: var(--color-brand-hover); }
+.btn--primary:active { background: var(--color-brand-pressed); }
+
+.btn--secondary {
+  background: transparent;
+  color: var(--color-text);
+  border-color: color-mix(in srgb, var(--color-brand) 70%, transparent);
+}
+.btn--secondary:hover:not(:disabled) { background: var(--color-brand-soft); }
+
+/* ---- Selection chips (onboarding) ----------------------------------------- */
+.chips { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--tap-min);
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-pill);
+  border: var(--border-thick) solid var(--color-border-strong);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  font-family: var(--font-body);
+  font-weight: var(--weight-medium);
+  font-size: var(--text-body);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+.chip__check { display: none; width: var(--icon-sm); height: var(--icon-sm); stroke-width: 2.25; }
+.chip__cat { color: var(--cat); }
+.chip:hover { border-color: color-mix(in srgb, var(--color-brand) 50%, var(--color-border-strong)); }
+.chip[aria-pressed="true"] {
+  border-color: var(--color-brand);
+  background: var(--color-brand-soft);
+  color: var(--color-text);
+}
+.chip[aria-pressed="true"] .chip__check { display: block; color: var(--color-brand-text); }
+
+/* category picker: two even columns, category icon first, check last */
+.chips--grid { display: grid; grid-template-columns: 1fr 1fr; }
+.chips--grid .chip { min-height: 52px; padding: 0 var(--space-3); }
+.chips--grid .chip__label { flex: 1; text-align: left; }
+.chips__hint { margin: var(--space-3) 0 0; color: var(--color-text-subtle); font-size: var(--text-small); }
+
+/* ---- Two-step button (destructive actions) ------------------------------- */
+.btn--armed {
+  border-color: var(--color-brand);
+  background: var(--color-brand-soft);
+}
+
+/* ---- Icon button ---------------------------------------------------------- */
+.icon-btn {
+  display: grid;
+  place-items: center;
+  width: var(--tap-min);
+  height: var(--tap-min);
+  padding: 0;
+  border-radius: var(--radius-pill);
+  border: var(--border-hairline) solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out);
+}
+.icon-btn:hover { background: var(--color-surface-raised); color: var(--color-text); }
+
+/* ---- Top bar (logo · actions) -------------------------------------------- */
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+.top-bar .logo { font-size: var(--text-h2); }
+
+/* ---- Screen header (back · title · spacer) -------------------------------- */
+.screen-header {
+  display: grid;
+  grid-template-columns: var(--tap-min) 1fr var(--tap-min);
+  align-items: center;
+  gap: var(--space-2);
+}
+.screen-header__title {
+  margin: 0;
+  text-align: center;
+  font-family: var(--font-display);
+  font-weight: var(--weight-bold);
+  font-size: var(--text-h3);
+  line-height: var(--leading-h3);
+}
+.screen-header__title:focus { outline: none; }
+
+/* ---- Section label (settings groups) -------------------------------------- */
+.section-label {
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-display);
+  font-weight: var(--weight-semibold);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  color: var(--color-text);
+}
+
+/* ---- Settings rows -------------------------------------------------------- */
+.rows { display: grid; gap: var(--space-2); }
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 60px;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  border: var(--border-hairline) solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: var(--shadow-inset-top);
+  text-decoration: none;
+  font: inherit;
+  text-align: left;
+  width: 100%;
+}
+a.row:hover, button.row:hover { background: var(--color-surface-raised); cursor: pointer; }
+.row__icon { color: var(--color-text-muted); }
+.row__text { flex: 1; display: grid; gap: 2px; min-width: 0; }
+.row__label { font-weight: var(--weight-medium); }
+.row__desc { color: var(--color-text-subtle); font-size: var(--text-small); line-height: var(--leading-small); }
+.row__value { color: var(--color-text-subtle); font-size: var(--text-small); }
+.row__chevron { color: var(--color-text-subtle); }
+
+/* ---- Toggle (button role="switch") ---------------------------------------- */
+.toggle {
+  position: relative;
+  flex: none;
+  width: 52px;
+  height: 32px;
+  padding: 0;
+  border: var(--border-hairline) solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-raised);
+  cursor: pointer;
+  transition: background var(--duration-base) var(--ease-out),
+              box-shadow var(--duration-base) var(--ease-out);
+}
+.toggle::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-pill);
+  background: var(--color-text-subtle);
+  transition: transform var(--duration-base) var(--ease-out),
+              background var(--duration-base) var(--ease-out);
+}
+.toggle[aria-checked="true"] {
+  background: var(--color-brand);
+  border-color: var(--color-brand);
+  box-shadow: var(--glow-brand);
+}
+.toggle[aria-checked="true"]::after {
+  transform: translateX(20px);
+  background: var(--color-text-on-brand);
+}
+
+/* ---- Text button ("Skip") -------------------------------------------------- */
+.text-btn {
+  min-height: var(--tap-min);
+  padding: 0 var(--space-3);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-text-muted);
+  font-family: var(--font-body);
+  font-weight: var(--weight-medium);
+  font-size: var(--text-body);
+  cursor: pointer;
+  transition: color var(--duration-fast) var(--ease-out), background var(--duration-fast) var(--ease-out);
+}
+.text-btn:hover { color: var(--color-text); background: var(--color-surface); }
+
+/* ---- Progress button (intro "next") ---------------------------------------
+   --progress (0..1) fills the ring; .is-done turns the arrow into a check. */
+.progress-btn {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: var(--progress-ring-size);
+  height: var(--progress-ring-size);
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.progress-btn__ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+  overflow: visible;
+}
+.progress-btn__track,
+.progress-btn__fill {
+  fill: none;
+  stroke-width: var(--progress-ring-stroke);
+}
+.progress-btn__track { stroke: var(--color-border-strong); }
+.progress-btn__fill {
+  stroke: var(--color-brand);
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: calc(1 - var(--progress, 0));
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--color-brand) 70%, transparent));
+  transition: stroke-dashoffset var(--duration-progress) var(--ease-out);
+}
+.progress-btn__core {
+  display: grid;
+  place-items: center;
+  width: var(--progress-core-size);
+  height: var(--progress-core-size);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-raised);
+  border: var(--border-hairline) solid var(--color-border-strong);
+  box-shadow: var(--shadow-inset-top);
+  transition: background var(--duration-icon-morph) var(--ease-out),
+              border-color var(--duration-icon-morph) var(--ease-out),
+              box-shadow var(--duration-icon-morph) var(--ease-out),
+              transform var(--duration-fast) var(--ease-out);
+}
+.progress-btn:hover .progress-btn__core { background: color-mix(in srgb, var(--color-brand) 18%, var(--color-surface-raised)); }
+.progress-btn:active .progress-btn__core { transform: scale(0.94); }
+.progress-btn.is-done .progress-btn__core {
+  background: var(--color-brand);
+  border-color: var(--color-brand);
+  box-shadow: var(--glow-brand);
+}
+.progress-btn__icon {
+  width: var(--icon-md);
+  height: var(--icon-md);
+  overflow: visible;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.progress-btn__arrow {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: opacity var(--duration-icon-morph) var(--ease-out),
+              transform var(--duration-icon-morph) var(--ease-out);
+}
+.progress-btn__check {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset var(--duration-icon-morph) var(--ease-out);
+}
+.progress-btn.is-done .progress-btn__arrow { opacity: 0; transform: translateX(6px) scale(0.6); }
+.progress-btn.is-done .progress-btn__check {
+  stroke-dashoffset: 0;
+  transition-delay: calc(var(--duration-icon-morph) * 0.6);
+}
+.progress-btn.is-done { color: var(--color-text-on-brand); }
+
+/* ---- Intro screens (onboarding) ------------------------------------------- */
+.intro {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  height: 100dvh;
+  max-width: var(--layout-max);
+  margin: 0 auto;
+  padding:
+    calc(var(--space-2) + env(safe-area-inset-top))
+    calc(var(--gutter) + env(safe-area-inset-right))
+    0
+    calc(var(--gutter) + env(safe-area-inset-left));
+  overflow: hidden;
+}
+.intro--framed { height: 100%; }
+.intro__top {
+  display: flex;
+  justify-content: flex-end;
+  min-height: var(--tap-min);
+}
+.intro__viewport {
+  min-height: 0;
+  margin: 0 calc(var(--gutter) * -1);
+  overflow: hidden;
+}
+.intro__track {
+  display: flex;
+  height: 100%;
+  touch-action: pan-y;
+  cursor: grab;
+}
+.intro__track:active { cursor: grabbing; }
+.intro__slide {
+  flex: 0 0 100%;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: var(--space-6);
+  padding: 0 var(--gutter);
+  text-align: center;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.intro__art {
+  display: grid;
+  place-items: center;
+  min-height: 0;
+}
+.intro__art .intro-art { width: 100%; height: 100%; max-width: var(--intro-art-max); max-height: var(--intro-art-max); }
+.intro__text { display: grid; gap: var(--space-3); padding-bottom: var(--space-2); }
+.intro__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: var(--weight-bold);
+  font-size: var(--text-tip);
+  line-height: var(--leading-tip);
+  letter-spacing: var(--tracking-tight);
+  text-wrap: balance;
+}
+.intro__sub {
+  margin: 0 auto;
+  max-width: 30ch;
+  color: var(--color-text-muted);
+  font-size: var(--text-body-lg);
+  line-height: var(--leading-body-lg);
+  text-wrap: pretty;
+}
+.intro__bottom {
+  display: grid;
+  place-items: center;
+  padding: var(--space-6) 0 calc(var(--space-8) + env(safe-area-inset-bottom));
+}
+@media (max-height: 700px) {
+  .intro__title { font-size: var(--text-h1); line-height: var(--leading-h1); }
+  .intro__slide { gap: var(--space-4); }
+  .intro__bottom { padding: var(--space-4) 0 calc(var(--space-5) + env(safe-area-inset-bottom)); }
+}
+
+/* ---- Intro graphics (IntroArt.jsx) --------------------------------------- */
+.intro-art { display: block; overflow: visible; }
+.intro-art .art-float,
+.intro-art .art-pulse { transform-box: fill-box; transform-origin: center; }
+.intro-art .art-spin { transform-box: view-box; transform-origin: 50% 50%; }
+.intro-art .art-float { animation: art-float var(--duration-ambient) ease-in-out infinite; }
+.intro-art .art-twinkle { animation: art-twinkle var(--duration-ambient-fast) ease-in-out infinite; }
+.intro-art .art-pulse { animation: art-pulse var(--duration-ambient) var(--ease-out) infinite; }
+.intro-art .art-spin { animation: art-spin var(--duration-ambient-slow) linear infinite; }
+@keyframes art-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+@keyframes art-twinkle { 0%, 100% { opacity: 0.25; } 50% { opacity: 1; } }
+@keyframes art-pulse { 0% { transform: scale(1); opacity: 0.6; } 100% { transform: scale(3.4); opacity: 0; } }
+@keyframes art-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .intro-art * { animation: none !important; }
+}
+
+/* ---- Splash (Splash.jsx) ---------------------------------------------------
+   Same background as the body (and the PWA launch screen), so the hand-off
+   is seamless. Fades and glows in, fades out over the next screen. */
+.splash {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background-color: var(--color-bg);
+  background-image: var(--texture-grain), var(--bg-glow-brand);
+  background-repeat: repeat, no-repeat;
+  color: var(--color-text);
+  font: inherit;
+  cursor: default;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity var(--duration-splash-out) var(--ease-in);
+}
+.splash--framed { position: absolute; }
+.splash.is-leaving { opacity: 0; pointer-events: none; }
+.splash:focus-visible { outline: none; }
+
+.splash__glow {
+  position: absolute;
+  width: min(80%, var(--splash-glow-size));
+  aspect-ratio: 1;
+  border-radius: var(--radius-pill);
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--color-brand) 45%, transparent), transparent);
+  animation: splash-glow var(--duration-splash-in) var(--ease-out) both;
+}
+.splash__content {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: var(--space-3);
+  animation: splash-in var(--duration-splash-in) var(--ease-out) both;
+}
+.splash__logo {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: var(--weight-bold);
+  font-size: var(--text-splash);
+  line-height: var(--leading-display);
+  letter-spacing: var(--tracking-tight);
+}
+
+@keyframes splash-in { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: none; } }
+@keyframes splash-glow { from { opacity: 0; transform: scale(0.6); } to { opacity: 1; transform: none; } }
+@keyframes splash-fade { from { opacity: 0; } to { opacity: 1; } }
+
+/* reduce motion: a simple fade, no scaling, no glow growing */
+@media (prefers-reduced-motion: reduce) {
+  .splash__content,
+  .splash__glow { animation-name: splash-fade; }
+}
+
+/* screens under the splash: layout-neutral wrapper that can be made inert */
+.screen-host { display: contents; }
+
+/* ---- Category cloud chip (CategoryCloud.jsx) --------------------------------
+   Big pill. The visible pill is .cat-chip__surface, so its right edge can lag
+   behind the real width and spring into place when the checkmark makes room. */
+.cloud {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-content: center;
+  gap: var(--space-3);
+}
+.cat-chip {
+  position: relative;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-text-muted);
+  font-family: var(--font-body);
+  font-weight: var(--weight-medium);
+  font-size: var(--text-h3);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.cat-chip:focus-visible { outline: none; }
+.cat-chip:focus-visible .cat-chip__surface { outline: 2px solid var(--color-focus); outline-offset: 3px; }
+.cat-chip__body {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  height: var(--chip-cloud-height);
+  padding: 0 var(--chip-pad, var(--space-5));
+  white-space: nowrap;
+}
+.cat-chip__surface {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  border: var(--border-thick) solid var(--color-border-strong);
+  box-shadow: var(--shadow-inset-top);
+  transition: background-color var(--duration-base) var(--ease-out),
+              border-color var(--duration-base) var(--ease-out),
+              box-shadow var(--duration-base) var(--ease-out);
+}
+.cat-chip__slot { flex: none; width: 0; height: 1px; }
+.cat-chip__check {
+  position: absolute;
+  left: var(--chip-pad, var(--space-5));
+  top: 50%;
+  width: var(--icon-md);
+  height: var(--icon-md);
+  margin-top: calc(var(--icon-md) / -2);
+  transform-origin: center;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.cat-chip__content {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.cat-chip__content .icon { transition: color var(--duration-base) var(--ease-out); }
+.cat-chip__body > * { transition: color var(--duration-base) var(--ease-out); }
+
+/* hover / pressed (pressed is forced with .is-pressed for the styleguide) */
+.cat-chip:hover .cat-chip__surface,
+.cat-chip.is-pressed .cat-chip__surface { border-color: color-mix(in srgb, var(--cat) 55%, var(--color-border-strong)); }
+
+/* selected: filled with the category color, dark text (≥7:1 on every --cat) */
+.cat-chip[aria-pressed="true"] { color: var(--color-text-on-category); }
+.cat-chip[aria-pressed="true"] .cat-chip__surface {
+  background: var(--cat);
+  border-color: var(--cat);
+  box-shadow: var(--glow-cat);
+}
