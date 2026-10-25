@@ -110,6 +110,10 @@ Pages: `/` (main screen), `/styleguide.html`, `/tips-review.html`. `npm run buil
 - Commits use the GitHub noreply email (repo-local `git config user.email`), so the owner's real email never lands in the public history. Keep it that way.
 - After deploying, test the live URL, not just `npm run dev`: the production build minifies CSS (e.g. `2000ms` becomes `2s`), which only shows up there. `src/lib/motionTokens.js` reads both `ms` and `s` for this reason.
 
+## Backlog
+
+[BACKLOG.md](BACKLOG.md) holds open questions and future feature ideas. Check it at the start of each update, and update it when something is done or decided.
+
 ## Content files
 
 - [src/content.json](src/content.json) is the single source of all tip text: categories, 20 tips per category (title ≤ 6 words, text ≤ 15 words, `minutes` ≤ 27, `league` flag, ~half `true`), and `tipsOfTheDay` with `starts`/`expires` (inclusive) plus a `fact` noting what each is based on. Pages never hard-code tip text; they import it through `src/lib/content.js` (the review page imports the JSON directly).
