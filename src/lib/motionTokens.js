@@ -7,7 +7,14 @@ const num = (s, name) => {
   const n = parseFloat(css().getPropertyValue(name));
   return Number.isFinite(n) ? n : s;
 };
-const ms = (fallback, name) => num(fallback, name) / 1000; // framer wants seconds
+// Durations come back in seconds (framer wants seconds). The production CSS
+// minifier rewrites "2000ms" as "2s", so read the unit instead of assuming ms.
+const ms = (fallback, name) => {
+  const raw = css().getPropertyValue(name).trim();
+  const n = parseFloat(raw);
+  if (!Number.isFinite(n)) return fallback / 1000;
+  return /\dms$/.test(raw) ? n / 1000 : /\ds$/.test(raw) ? n : n / 1000;
+};
 const bezier = (fallback, name) => {
   const m = css().getPropertyValue(name).match(/cubic-bezier\(([^)]+)\)/);
   return m ? m[1].split(",").map(Number) : fallback;
