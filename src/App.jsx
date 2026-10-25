@@ -13,6 +13,11 @@ export function App() {
   const [screen, setScreen] = useState(() => (loadPrefs() ? "main" : "onboarding"));
   const [splash, setSplash] = useState(true);
   const [firstLaunch] = useState(() => !loadPrefs());
+  // "why play?" sheet: every time the main screen opens after launch, and
+  // right after first-time onboarding
+  const [askReason, setAskReason] = useState(() => !!loadPrefs());
+  // how the main screen enters: "gather" right after the category picker
+  const [entrance, setEntrance] = useState(null);
 
   useEffect(() => {
     const onPop = () => setScreen(s => (s === "settings" ? "main" : s));
@@ -25,6 +30,8 @@ export function App() {
   const finishOnboarding = categories => {
     savePrefs({ categories });
     setPrefs(loadPrefs() ?? { categories, onboarded: true }); // works even if storage is blocked
+    setAskReason(true);
+    setEntrance("gather");
     setScreen("main");
   };
 
@@ -35,6 +42,7 @@ export function App() {
   };
 
   const openSettings = () => {
+    setEntrance(null);
     history.pushState({ screen: "settings" }, "");
     setScreen("settings");
   };
@@ -56,7 +64,18 @@ export function App() {
         onBack={() => history.back()}
       />
     );
-  } else view = <MainScreen categories={prefs.categories} onOpenSettings={openSettings} />;
+  } else {
+    view = (
+      <MainScreen
+        categories={prefs.categories}
+        onOpenSettings={openSettings}
+        ready={!splash}
+        askOnOpen={askReason}
+        onAsked={() => setAskReason(false)}
+        entrance={entrance}
+      />
+    );
+  }
 
   return (
     <>

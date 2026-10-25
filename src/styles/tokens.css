@@ -96,6 +96,7 @@
   /* size / line-height pairs */
   --text-display: 2.5rem;    --leading-display: 1.05;   /* 40 — logo, hero */
   --text-tip: 2.5rem;        --leading-tip: 1.04;       /* 40 — tip title on the deck card */
+  --text-tip-narrow: 2.125rem;                          /* 34 — same, on phones narrower than 375px */
   --text-h1: 2rem;           --leading-h1: 1.1;         /* 32 — compact tip cards, small phones */
   --text-h2: 1.5rem;         --leading-h2: 1.15;        /* 24 — screen titles */
   --text-h3: 1.125rem;       --leading-h3: 1.25;        /* 18 — section titles, small card titles */
@@ -114,6 +115,7 @@
   --space-4: 1rem;     /* 16 — screen gutter */
   --space-5: 1.25rem;  /* 20 */
   --space-6: 1.5rem;   /* 24 */
+  --space-7: 1.75rem;  /* 28 — main screen side margin */
   --space-8: 2rem;     /* 32 */
   --space-10: 2.5rem;  /* 40 */
   --space-12: 3rem;    /* 48 */
@@ -166,6 +168,9 @@
   --swipe-fly-distance: 1.4;        /* fly-out distance, in card widths */
   --swipe-glow-strength: 55%;       /* category color share in the drag glow */
   --swipe-glow-blur: 56px;          /* drag glow spread */
+  --swipe-card-rest-solid: 0.92;    /* solid backing under the glass card at rest (readable);
+                                       fades to 0 as the drag reaches the threshold (see-through) */
+
   --duration-swipe-out: 320ms;      /* fly-out */
   --duration-swipe-settle: 260ms;   /* snap back after a short drag */
   --duration-deck-shift: 300ms;     /* next card moves up to the top */
@@ -177,6 +182,7 @@
   --chip-check-slot: 30px;          /* room the checkmark takes when selected (20px icon + gap) */
   --chip-tilt-max: 5deg;            /* largest random tilt */
   --chip-tilt-share: 0.45;          /* share of chips that get a tilt */
+  --chip-tilt-min: 0.4;             /* a tilted chip leans at least this share of --chip-tilt-max */
   --chip-drop-fade: 220ms;          /* opacity while falling */
   --chip-drop-distance: 120px;      /* how far above the chips start falling */
   --chip-drop-stagger: 32ms;        /* delay between chips; 8 chips ≈ 0.25s + landing ≈ 0.6s total */
@@ -190,6 +196,54 @@
   --chip-press-scale: 0.95;         /* while the finger is down */
   --duration-chip-fade: 300ms;      /* reduce motion: simple fade-in */
   --haptic-chip: 8;                 /* ms of vibration on tap */
+
+  /* ---- Screen transition: "gather into the deck" ------------------------
+     Category picker -> main screen (reusable for other changes into the main
+     screen). Total ≈ 0.9s: gather 380ms, then rise ~500ms. */
+  --duration-gather: 380ms;          /* selected chips fly to the deck spot and dissolve */
+  --duration-gather-fade: 220ms;     /* unselected chips, headline and button fade out */
+  --gather-stagger: 25ms;            /* selected chips leave one after another */
+  --gather-scale: 0.45;              /* chips shrink to this before they vanish */
+  --gather-fade-scale: 0.92;         /* unselected chips shrink slightly while fading */
+  --gather-target-y: 0.52;           /* where the deck will be: share of the screen height */
+  --gather-glow: 0 0 40px 12px;      /* glow around gathering chips (in their category color) */
+  --ease-gather: cubic-bezier(0.6, 0, 0.4, 1);  /* ease-in-out: pick up speed, then settle into the deck */
+  --rise-distance: 56px;             /* the deck rises from this far below */
+  --spring-rise-stiffness: 380;      /* gentle spring, a hint of overshoot */
+  --spring-rise-damping: 28;
+  --rise-stagger: 80ms;              /* cards behind the top card settle one after another */
+  --duration-rise-settle: 500ms;     /* when the rise counts as done (e.g. before the sheet opens) */
+
+  /* ---- Border beam (reusable, Beam.jsx) ----------------------------------
+     A thin light beam travelling around an element's rounded border. Used on
+     "Tip of the day". To reuse: put <Beam /> inside a position:relative
+     element and set --beam-radius to that element's border radius. */
+  --beam-head: var(--color-brand);         /* bright front of the beam */
+  --beam-tail: var(--color-brand-accent);  /* lighter tail it fades into */
+  --beam-width: 1px;                /* line thickness */
+  --beam-length: 70deg;             /* share of the loop the beam covers (of 360deg) */
+  --duration-beam-loop: 6s;         /* one full loop */
+  --beam-opacity: 0.6;              /* the line */
+  --beam-glow-spread: 2px;          /* soft glow band on each side of the edge */
+  --beam-glow-blur: 3px;
+  --beam-glow-opacity: 0.22;
+  --beam-static-opacity: 0.3;       /* reduce motion: static soft border instead of the beam */
+
+  /* ---- Bottom sheet ------------------------------------------------------- */
+  --radius-sheet: 28px;             /* top corners */
+  --sheet-max-height: 88dvh;
+  --sheet-handle-width: 40px;
+  --sheet-handle-height: 4px;
+  --sheet-backdrop: rgba(5, 6, 8, 0.6);   /* dims the screen behind */
+  --sheet-backdrop-blur: 4px;             /* deck stays visible, slightly soft */
+  --spring-sheet-stiffness: 360;    /* slide up: quick, no visible bounce */
+  --spring-sheet-damping: 36;
+  --sheet-close-threshold: 0.25;    /* drag down this share of the sheet height to close */
+  --sheet-close-velocity: 600;      /* px/s: or flick it down */
+  --duration-sheet-fade: 220ms;     /* backdrop fade; reduce motion: the whole sheet fades */
+  --sheet-open-delay: 400ms;        /* main screen settles in first, then the sheet slides up */
+  --duration-screen-in: 300ms;      /* screens fade in when they appear */
+  --duration-reaction-in: 400ms;    /* reaction line fades in once the sheet has closed */
 
   /* ---- Splash ------------------------------------------------------------- */
   --text-splash: 3.5rem;            /* 56 — splash wordmark */
@@ -213,13 +267,25 @@
   --duration-ambient-slow: 60s;     /* orbit spin */
 
   /* cards waiting behind the top one */
-  --deck-1-x: 10px;   --deck-1-y: 12px;   --deck-1-rotate: 3deg;   --deck-1-scale: 0.97;
-  --deck-2-x: -8px;   --deck-2-y: 22px;   --deck-2-rotate: -4deg;  --deck-2-scale: 0.94;
+  --deck-1-x: 8px;    --deck-1-y: 12px;   --deck-1-rotate: 2.5deg; --deck-1-scale: 0.97;
+  --deck-2-x: -6px;   --deck-2-y: 22px;   --deck-2-rotate: -3.5deg; --deck-2-scale: 0.94;
+  /* back cards overhang the top card by ~12px; --gutter-deck leaves ~16px of air beyond that */
+  --card-aspect: 0.78;              /* card width / height; the card never gets taller than this */
 
   /* ---- Layout ----------------------------------------------------------- */
   --layout-max: 430px;     /* app column; designed at 390 */
-  --gutter: var(--space-4);
+  --gutter: var(--space-4);          /* scrolling screens (onboarding, settings) */
+  --gutter-deck: var(--space-7);     /* main screen: header, reason, deck, hint and "Tip of the day"
+                                        all share this margin, so the fanned cards never reach the edge */
   --tap-min: 44px;
+  --control-height: 52px;            /* buttons, settings chips */
+
+  /* ---- Surfaces & focus ----------------------------------------------------- */
+  --glass-blur: 16px;                /* backdrop blur behind glass cards and the sheet */
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 3px;
+  /* Breakpoints (CSS can't use variables in media queries, so these are fixed):
+     max-width 374px = narrow phones; max-height 700px = short phones. */
 }
 
 /* Category mapping: put data-category on any element to set --cat */

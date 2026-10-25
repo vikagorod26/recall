@@ -39,3 +39,17 @@ export function resetAll() {
     /* storage unavailable: nothing to clear */
   }
 }
+
+// "Why do you want to play?" answer: { id: reasonId | null, at: ms timestamp }.
+// id null = skipped. The question is asked on every launch.
+
+export function loadReason() {
+  const r = load("reason", null);
+  return r && typeof r.at === "number" ? r : null;
+}
+
+export function saveReason(id) {
+  const r = { id: id ?? null, at: Date.now() };
+  save("reason", r);
+  return r;
+}

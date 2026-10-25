@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { Button, IconButton, TwoStepButton } from "./components/Buttons.jsx";
 import { Splash } from "./components/Splash.jsx";
@@ -8,7 +8,9 @@ import { ProgressButton } from "./components/ProgressButton.jsx";
 import { IntroArt } from "./components/IntroArt.jsx";
 import { IntroCarousel } from "./components/IntroCarousel.jsx";
 import { INTRO_SLIDES } from "./screens/Onboarding.jsx";
-import { categories, tips, tipOfTheDay } from "./lib/content.js";
+import { categories, reasonById, reasons, tips, tipOfTheDay, tipsOfTheDay } from "./lib/content.js";
+import { Beam } from "./components/Beam.jsx";
+import { ReasonSheet } from "./components/ReasonSheet.jsx";
 import { Icon } from "./components/Icon.jsx";
 import { CategoryTag, TipCard } from "./components/TipCard.jsx";
 import { DailyTip } from "./components/DailyTip.jsx";
@@ -40,7 +42,7 @@ mount("swipe-states", STATES.map(s => (
 
 mount("swipe-live", (
   <>
-    <SwipeDeck tips={tips} />
+    <div className="deck-area"><SwipeDeck tips={tips} /></div>
     <div className="swipe-hint label">
       <Icon id="arrow-left" className="icon--sm" />
       Swipe for another tip
@@ -68,6 +70,56 @@ function SplashDemo() {
   );
 }
 mount("splash-demo", <SplashDemo />);
+
+// ---- Tip of the day · border beam ---------------------------------------------------
+mount("beam-daily", <DailyTip tip={tipOfTheDay() ?? tipsOfTheDay[0]} />);
+
+function StaticDaily() {
+  const d = tipsOfTheDay[0];
+  return (
+    <aside className="daily" aria-label="Tip of the day (reduce motion)">
+      <Beam still />
+      <div className="daily__head">
+        <span className="daily__label label"><Icon id="sparkles" className="icon--sm" />Tip of the day</span>
+      </div>
+      <p className="daily__text">{d.title}</p>
+      <p className="daily__meta">{d.text}</p>
+    </aside>
+  );
+}
+mount("beam-static", <StaticDaily />);
+mount("beam-reuse", <><Beam />Any element with --beam-radius</>);
+
+// ---- Screen transition: gather into the deck -------------------------------------
+function GatherDemo() {
+  const [run, setRun] = useState(0);
+  const [phase, setPhase] = useState("pick"); // pick -> gather -> deck
+  const [selected, setSelected] = useState(["outdoors", "cooking", "music"]);
+  const [gatherTo, setGatherTo] = useState(null);
+  const frame = useRef(null);
+  const play = () => {
+    const r = frame.current.getBoundingClientRect();
+    const g = readMotionTokens().gather;
+    setGatherTo({ x: r.left + r.width / 2, y: r.top + r.height * 0.45 });
+    setPhase("gather");
+    setTimeout(() => setPhase("deck"), (g.duration + (selected.length - 1) * g.stagger) * 1000);
+  };
+  const replay = () => { setGatherTo(null); setPhase("pick"); setRun(n => n + 1); };
+  const pool = tips.filter(t => selected.includes(t.category));
+  return (
+    <>
+      <div className="sg-gather" ref={frame}>
+        {phase !== "deck"
+          ? <CategoryCloud key={run} selected={selected} onChange={setSelected} gatherTo={gatherTo} />
+          : <div className="deck-area"><SwipeDeck key={run} tips={pool.length ? pool : tips} rise /></div>}
+      </div>
+      {phase === "deck"
+        ? <Button variant="secondary" onClick={replay}>Replay</Button>
+        : <Button disabled={!selected.length || phase !== "pick"} onClick={play}>Continue (play the transition)</Button>}
+    </>
+  );
+}
+mount("gather-demo", <GatherDemo />);
 
 // ---- Onboarding intro -----------------------------------------------------------
 const PROGRESS_STATES = [
@@ -132,6 +184,57 @@ function CloudDemo() {
   );
 }
 mount("chip-cloud", <CloudDemo />);
+
+// ---- Bottom sheet, reason chips, pill, reaction ---------------------------------
+mount("sheet-footer-states", [
+  { label: "No reason selected", disabled: true },
+  { label: "Reason selected", disabled: false },
+].map(s => (
+  <div className="sg-chip-state" key={s.label} style={{ display: "grid", gap: "var(--space-3)" }}>
+    <span>{s.label}</span>
+    <Button disabled={s.disabled}>Show me tips</Button>
+  </div>
+)));
+
+function SheetDemo() {
+  const [open, setOpen] = useState(false);
+  const [current, setCurrent] = useState(null);
+  const [result, setResult] = useState("Not opened yet.");
+  return (
+    <>
+      <Button variant="secondary" onClick={() => setOpen(true)}>Open the "why play?" sheet</Button>
+      <p className="sg-note">Result: {result} Open it again to see the last answer preselected.</p>
+      <ReasonSheet
+        open={open}
+        current={current}
+        onClose={() => setOpen(false)}
+        onAnswer={id => { setCurrent(id); setResult(`confirmed "${reasonById[id].label}".`); }}
+        onDismiss={() => setResult("closed without confirming (skip).")}
+      />
+    </>
+  );
+}
+mount("sheet-demo", <SheetDemo />);
+
+mount("reason-chips", reasons.map((r, i) => (
+  <CloudChip key={r.id} option={{ id: r.id, label: r.label, icon: r.icon }} tone="brand" radio selected={i === 1} />
+)));
+
+mount("reason-pill", [
+  { label: "No reason", reason: null },
+  { label: "Reason set", reason: reasons[1] },
+].map(s => (
+  <div className="sg-chip-state" key={s.label} style={{ flexWrap: "wrap" }}>
+    <span>{s.label}</span>
+    <div style={{ display: "grid", gap: "var(--space-2)", justifyItems: "end" }}>
+      <button type="button" className={`pill-btn label${s.reason ? " is-set" : ""}`}>
+        <Icon id={s.reason ? s.reason.icon : "circle-help"} />
+        <span>{s.reason ? s.reason.label : "Why play?"}</span>
+      </button>
+      {s.reason && <p className="reaction" style={{ textAlign: "right" }}>{s.reason.reaction}</p>}
+    </div>
+  </div>
+)));
 
 // ---- Category picker, header, two-step button ---------------------------------
 function PickerDemo() {
@@ -215,7 +318,7 @@ document.getElementById("cat-swatches").innerHTML = categories.map(c => {
   </div>`;
 }).join("");
 
-document.getElementById("space-list").innerHTML = [1, 2, 3, 4, 5, 6, 8, 10, 12, 16].map(n =>
+document.getElementById("space-list").innerHTML = [1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 16].map(n =>
   `<div class="space-row"><span>space-${n} · ${n * 4}</span><div class="space-bar" style="width: var(--space-${n})"></div></div>`).join("");
 
 document.querySelectorAll(".chip").forEach(b => b.addEventListener("click", () =>

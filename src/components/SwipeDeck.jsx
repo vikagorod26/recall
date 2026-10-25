@@ -24,11 +24,15 @@ function vibrate(ms) {
   try { navigator.vibrate?.(ms); } catch { /* unsupported: no haptics */ }
 }
 
-export function SwipeDeck({ tips, persistKey, lockScroll = false, onSwipe }) {
+// `rise`: the deck enters by rising into place (after the "gather" transition):
+// the top card springs up from below, the cards behind settle one after another.
+export function SwipeDeck({ tips, lead, persistKey, lockScroll = false, onSwipe, rise = false }) {
   const tokens = useMotionTokens();
-  const { visible, advance } = useInfiniteDeck(tips, { persistKey });
+  const { visible, advance } = useInfiniteDeck(tips, { persistKey, lead });
   const exitDirs = useRef({});            // tip id -> -1 (left) | 1 (right)
   const refocus = useRef(false);          // keyboard swipe: focus the next top card
+  const risingIds = useRef(null);         // cards present when the deck rises in
+  if (risingIds.current === null) risingIds.current = new Set(rise ? visible.map(t => t.id) : []);
   const reveal = useMotionValue(0);       // 0..1 drag progress of the top card: fades in the next card's content
 
   const swipe = useCallback((id, dir, { viaKeyboard = false } = {}) => {
@@ -45,7 +49,7 @@ export function SwipeDeck({ tips, persistKey, lockScroll = false, onSwipe }) {
       className={`swipe-deck${lockScroll ? " swipe-deck--locked" : ""}`}
       aria-label="Tips. Swipe the top card, or press the left or right arrow key, for another tip."
     >
-      <AnimatePresence initial={false}>
+      <AnimatePresence initial={rise}>
         {visible.map((tip, depth) => (
           <DeckSlot
             key={tip.id}
@@ -55,6 +59,7 @@ export function SwipeDeck({ tips, persistKey, lockScroll = false, onSwipe }) {
             exitDirs={exitDirs}
             refocus={refocus}
             reveal={reveal}
+            rise={risingIds.current.has(tip.id)}
             onSwipe={swipe}
           />
         ))}
@@ -63,7 +68,8 @@ export function SwipeDeck({ tips, persistKey, lockScroll = false, onSwipe }) {
   );
 }
 
-function DeckSlot({ tip, depth, tokens, exitDirs, refocus, reveal, onSwipe }) {
+function DeckSlot({ tip, depth, tokens, exitDirs, refocus, reveal, onSwipe, rise = false }) {
+  const [rising, setRising] = useState(rise);
   // a card that is flying out is no longer the top card, even for a moment
   const isPresent = useIsPresent();
   const isTop = depth === 0 && isPresent;
@@ -80,6 +86,8 @@ function DeckSlot({ tip, depth, tokens, exitDirs, refocus, reveal, onSwipe }) {
   const rotate = useTransform(x, v => (v / width.current) * tokens.rotateMax);
   const glow = useTransform(x, v => Math.min(1, Math.abs(v) / (width.current * tokens.threshold)));
   useMotionValueEvent(glow, "change", v => { if (isTop) reveal.set(v); });
+  // solid backing: readable at rest, fades out with the drag so the glass shows the next card
+  const solid = useTransform(glow, v => tokens.restSolid * (1 - v));
 
   const pose = tokens.poses[Math.min(depth, 2)];
   const shift = { duration: tokens.deckShift, ease: tokens.easeOut };
@@ -104,8 +112,12 @@ function DeckSlot({ tip, depth, tokens, exitDirs, refocus, reveal, onSwipe }) {
   };
 
   const exit = () => {
-    const dir = exitDirs.current[tip.id] ?? 1;
+    const dir = exitDirs.current[tip.id];
     delete exitDirs.current[tip.id];
+    // not swiped away: the deck itself changed (e.g. a new reason). Fade out gently.
+    if (dir === undefined) {
+      return { opacity: 0, scale: 0.96, transition: { duration: tokens.deckShift, ease: tokens.easeOut } };
+    }
     return {
       x: dir * width.current * tokens.flyDistance,
       rotate: dir * tokens.rotateMax,
@@ -119,8 +131,17 @@ function DeckSlot({ tip, depth, tokens, exitDirs, refocus, reveal, onSwipe }) {
       className="swipe-deck__slot"
       data-depth={depth}
       style={{ zIndex: 3 - depth, ...(depth === 1 && { "--reveal": reveal }) }}
-      initial={{ ...tokens.poses[2], opacity: 0 }}
-      animate={{ ...pose, opacity: 1, transition: shift }}
+      initial={rise
+        ? { ...tokens.poses[0], y: tokens.gather.riseDistance, opacity: 0 }
+        : { ...tokens.poses[2], opacity: 0 }}
+      animate={{
+        ...pose,
+        opacity: 1,
+        transition: rising
+          ? { ...tokens.gather.rise, delay: depth * tokens.gather.riseStagger, opacity: { duration: tokens.gather.fade, delay: depth * tokens.gather.riseStagger } }
+          : shift,
+      }}
+      onAnimationComplete={() => rising && setRising(false)}
       exit="exit"
       variants={{ exit }}
     >
@@ -138,6 +159,7 @@ function DeckSlot({ tip, depth, tokens, exitDirs, refocus, reveal, onSwipe }) {
         onKeyDown={isTop ? handleKeyDown : undefined}
         style={{ x, rotate }}
       >
+        <motion.div className="swipe-card__solid" style={{ opacity: solid }} aria-hidden="true" />
         <TipCard tip={tip} back={depth > 0} />
         <motion.div className="swipe-card__glow" style={{ opacity: glow }} />
       </motion.div>
@@ -159,6 +181,7 @@ export function SwipeCardStill({ tip, offset = 0, flying = false }) {
         opacity: flying ? 0.45 : 1,
       }}
     >
+      <div className="swipe-card__solid" style={{ opacity: t.restSolid * (1 - glow) }} aria-hidden="true" />
       <TipCard tip={tip} />
       <div className="swipe-card__glow" style={{ opacity: glow }} />
     </div>

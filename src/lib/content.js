@@ -5,6 +5,14 @@ export const tips = content.tips;
 export const tipsOfTheDay = content.tipsOfTheDay;
 export const categoryById = Object.fromEntries(categories.map(c => [c.id, c]));
 
+// "Why do you want to play?" reasons and the tips written for each.
+export const reasons = content.reasons ?? [];
+export const reasonById = Object.fromEntries(reasons.map(r => [r.id, r]));
+export const reasonTips = content.reasonTips ?? [];
+export function tipsForReason(id) {
+  return id ? reasonTips.filter(t => t.reason === id) : [];
+}
+
 export function tipsForCategories(ids) {
   if (!ids) return tips;
   const wanted = new Set(ids);
@@ -12,7 +20,7 @@ export function tipsForCategories(ids) {
   return picked.length ? picked : tips;
 }
 
-export function localToday(date = new Date()) {
+function localToday(date = new Date()) {
   const p = n => String(n).padStart(2, "0");
   return `${date.getFullYear()}-${p(date.getMonth() + 1)}-${p(date.getDate())}`;
 }

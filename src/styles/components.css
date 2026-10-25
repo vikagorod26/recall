@@ -20,8 +20,8 @@ body {
 }
 
 :focus-visible {
-  outline: 2px solid var(--color-focus);
-  outline-offset: 3px;
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: var(--focus-ring-offset);
 }
 
 .icon {
@@ -101,7 +101,6 @@ body {
   transition: transform var(--duration-slow) var(--ease-out);
 }
 .deck__layer--1 { transform: translate(var(--deck-1-x), var(--deck-1-y)) rotate(var(--deck-1-rotate)); opacity: 0.85; }
-.deck__layer--2 { transform: translate(var(--deck-2-x), var(--deck-2-y)) rotate(var(--deck-2-rotate)); opacity: 0.55; z-index: -2; }
 
 .tip-card {
   position: relative;
@@ -117,8 +116,8 @@ body {
     var(--bg-glow-cat),
     var(--sheen-cat),
     var(--color-surface-glass);
-  -webkit-backdrop-filter: blur(16px);
-  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  backdrop-filter: blur(var(--glass-blur));
   box-shadow: var(--shadow-card), var(--glow-cat), var(--shadow-inset-top);
   overflow: hidden;
 }
@@ -159,6 +158,11 @@ body {
   letter-spacing: var(--tracking-tight);
   text-wrap: balance;
 }
+/* narrow phones (under 375px): slightly smaller title and padding, same proportions */
+@media (max-width: 374px) {
+  .tip-card { padding: var(--space-5) var(--space-4) var(--space-4); }
+  .tip-card__title { font-size: var(--text-tip-narrow); }
+}
 .tip-card--compact .tip-card__title {
   margin: var(--space-1) 0 0;
   font-size: var(--text-h1);
@@ -190,6 +194,22 @@ body {
   margin-left: auto;
 }
 
+/* ---- Deck area: holds a SwipeDeck at card proportions ---------------------
+   Card keeps --card-aspect (never taller than that), centered in spare height;
+   room underneath for the cards fanned out behind it. Use inside a screen with
+   --gutter-deck side margins so the fanned cards never reach the screen edge. */
+.deck-area {
+  display: grid;
+  align-items: center;
+  min-height: 0;
+  padding-bottom: var(--space-6);
+}
+.deck-area .swipe-deck {
+  max-height: 100%;
+  height: auto;
+  aspect-ratio: var(--card-aspect);
+}
+
 /* ---- Swipe deck (src/components/SwipeDeck.jsx) ---------------------------- */
 .swipe-deck {
   position: relative;
@@ -216,6 +236,16 @@ body {
 .swipe-deck--locked .swipe-card { touch-action: none !important; }
 .swipe-card:focus-visible { outline-offset: 4px; }
 .swipe-card .tip-card { height: 100%; min-height: 0; }
+.swipe-card { isolation: isolate; }
+/* solid backing under the glass card (opacity driven by SwipeDeck) */
+.swipe-card__solid {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  pointer-events: none;
+}
 
 /* drag glow: same category color both ways; opacity follows the drag */
 .swipe-card__glow {
@@ -241,8 +271,11 @@ body {
   box-shadow: var(--shadow-card);
 }
 
-/* ---- Tip of the day (standalone, above the deck) -------------------------- */
+/* ---- Tip of the day (standalone, under the deck) -------------------------- */
 .daily {
+  position: relative;          /* hosts the border beam */
+  --beam-radius: var(--radius-md);
+  --beam-inset: var(--border-hairline);
   display: grid;
   gap: var(--space-2);
   padding: var(--space-4);
@@ -300,7 +333,7 @@ body {
   justify-content: center;
   gap: var(--space-2);
   width: 100%;
-  min-height: 52px;
+  min-height: var(--control-height);
   padding: 0 var(--space-6);
   border-radius: var(--radius-pill);
   border: var(--border-thick) solid transparent;
@@ -360,7 +393,7 @@ body {
 
 /* category picker: two even columns, category icon first, check last */
 .chips--grid { display: grid; grid-template-columns: 1fr 1fr; }
-.chips--grid .chip { min-height: 52px; padding: 0 var(--space-3); }
+.chips--grid .chip { min-height: var(--control-height); padding: 0 var(--space-3); }
 .chips--grid .chip__label { flex: 1; text-align: left; }
 .chips__hint { margin: var(--space-3) 0 0; color: var(--color-text-subtle); font-size: var(--text-small); }
 
@@ -767,7 +800,7 @@ a.row:hover, button.row:hover { background: var(--color-surface-raised); cursor:
   touch-action: manipulation;
 }
 .cat-chip:focus-visible { outline: none; }
-.cat-chip:focus-visible .cat-chip__surface { outline: 2px solid var(--color-focus); outline-offset: 3px; }
+.cat-chip:focus-visible .cat-chip__surface { outline: var(--focus-ring-width) solid var(--color-focus); outline-offset: var(--focus-ring-offset); }
 .cat-chip__body {
   position: relative;
   display: inline-flex;
@@ -815,10 +848,222 @@ a.row:hover, button.row:hover { background: var(--color-surface-raised); cursor:
 .cat-chip:hover .cat-chip__surface,
 .cat-chip.is-pressed .cat-chip__surface { border-color: color-mix(in srgb, var(--cat) 55%, var(--color-border-strong)); }
 
+/* leaving: selected chips glow in their color while they gather into the deck */
+.cat-chip.is-gathering .cat-chip__surface {
+  box-shadow: var(--gather-glow) color-mix(in srgb, var(--cat) 70%, transparent);
+  transition: box-shadow var(--duration-gather) var(--ease-gather);
+}
+
+/* brand tone (e.g. reasons): brand purple instead of a category color;
+   white text, because dark text on brand purple is only 4.2:1 */
+.cat-chip[data-tone="brand"] {
+  --cat: var(--color-brand);
+  --chip-on: var(--color-text-on-brand);
+  --glow-cat: var(--glow-brand);
+}
+
 /* selected: filled with the category color, dark text (≥7:1 on every --cat) */
-.cat-chip[aria-pressed="true"] { color: var(--color-text-on-category); }
+.cat-chip[aria-pressed="true"],
+.cat-chip[aria-checked="true"] { color: var(--chip-on, var(--color-text-on-category)); }
+.cat-chip[aria-checked="true"] .cat-chip__surface,
 .cat-chip[aria-pressed="true"] .cat-chip__surface {
   background: var(--cat);
   border-color: var(--cat);
   box-shadow: var(--glow-cat);
+}
+
+/* ---- Bottom sheet (BottomSheet.jsx) ----------------------------------------- */
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: var(--sheet-backdrop);
+  -webkit-backdrop-filter: blur(var(--sheet-backdrop-blur));
+  backdrop-filter: blur(var(--sheet-backdrop-blur));
+}
+.sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 51;
+  display: flex;
+  flex-direction: column;
+  max-width: var(--layout-max);
+  max-height: var(--sheet-max-height);
+  margin: 0 auto;
+  padding: var(--space-3) var(--gutter) calc(var(--space-6) + env(safe-area-inset-bottom));
+  border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
+  border: var(--border-hairline) solid var(--color-border-strong);
+  border-bottom: 0;
+  background:
+    var(--texture-grain),
+    var(--bg-glow-brand),
+    var(--color-surface-glass);
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  backdrop-filter: blur(var(--glass-blur));
+  box-shadow: var(--shadow-card), var(--shadow-inset-top);
+  touch-action: none;
+  outline: none;
+}
+/* the sheet continues below the screen edge, so a springy overshoot never shows a gap */
+.sheet::after {
+  content: "";
+  position: absolute;
+  left: -1px;
+  right: -1px;
+  top: 100%;
+  height: 100vh;
+  background: var(--color-surface);
+}
+.sheet__handle {
+  flex: none;
+  display: grid;
+  place-items: center;
+  height: var(--space-5);
+  margin: calc(var(--space-2) * -1) auto var(--space-2);
+  padding: 0 var(--space-6);
+  border: 0;
+  background: none;
+  cursor: grab;
+}
+.sheet__handle::before {
+  content: "";
+  width: var(--sheet-handle-width);
+  height: var(--sheet-handle-height);
+  border-radius: var(--radius-pill);
+  background: var(--color-border-strong);
+}
+/* content scrolls if taller than the sheet; dragging the handle/header still closes it */
+.sheet__body { overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; }
+.sheet__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: var(--weight-bold);
+  font-size: var(--text-h2);
+  line-height: var(--leading-h2);
+  letter-spacing: var(--tracking-tight);
+}
+.sheet__title:focus { outline: none; }
+.sheet__lead { margin: var(--space-2) 0 0; color: var(--color-text-muted); }
+
+/* ---- Pill button (small chip-shaped button, e.g. current reason) ----------- */
+.pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: calc(var(--tap-min) - var(--space-2));   /* 36px; ::before pads the tap target to 44 */
+  max-width: 100%;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-pill);
+  border: var(--border-hairline) solid var(--color-border-strong);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--duration-fast) var(--ease-out), border-color var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out);
+}
+.pill-btn .icon { width: var(--icon-sm); height: var(--icon-sm); }
+.pill-btn span { overflow: hidden; text-overflow: ellipsis; }
+.pill-btn:hover { background: var(--color-surface-raised); color: var(--color-text); }
+.pill-btn.is-set {
+  border-color: color-mix(in srgb, var(--color-brand) 70%, transparent);
+  background: var(--color-brand-soft);
+  color: var(--color-text);
+}
+.pill-btn.is-set .icon { color: var(--color-brand-text); }
+/* invisible padding brings the tap target to 44px */
+.pill-btn { position: relative; }
+.pill-btn::before { content: ""; position: absolute; inset: -4px 0; }
+
+/* ---- Reaction line (above the deck, after picking a reason) ----------------
+   A quiet aside: body text in the muted color, so the tip card stays the hero. */
+.reaction {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-family: var(--font-body);
+  font-weight: var(--weight-regular);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  text-wrap: pretty;
+}
+.sheet__cloud { padding: var(--space-6) 0 var(--space-2); }
+.sheet__footer { flex: none; padding-top: var(--space-5); }
+
+/* short screens: compact chips and title so all reasons fit without scrolling */
+@media (max-height: 700px) {
+  .sheet__title { font-size: var(--text-h3); line-height: var(--leading-h3); }
+  .sheet__lead { font-size: var(--text-small); line-height: var(--leading-small); }
+  .sheet__cloud { padding: var(--space-3) 0 0; }
+  .sheet .cloud { gap: var(--space-1) var(--space-2); }
+  .sheet__footer { padding-top: var(--space-3); }
+  .sheet { padding-bottom: calc(var(--space-4) + env(safe-area-inset-bottom)); }
+  .sheet .cat-chip { font-size: var(--text-body); }
+  .sheet .cat-chip__body { height: var(--tap-min); }
+}
+
+/* ---- Border beam (Beam.jsx, reusable) ----------------------------------------
+   .beam__ring is masked to a ring exactly as wide as its padding and follows
+   the border radius, so the beam hugs the corners. Inside, a large square with
+   a conic gradient rotates: transform only, so it runs on the GPU compositor
+   with no repaint per frame. (The black in the masks is an alpha mask, not a
+   color.) Pauses when the app is in the background. */
+.beam {
+  position: absolute;
+  inset: calc(var(--beam-inset, 0px) * -1);   /* host's border width: sit exactly on the border */
+  z-index: 1;
+  border-radius: var(--beam-radius, var(--radius-md));
+  pointer-events: none;
+}
+.beam__ring {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: var(--beam-width);
+  overflow: hidden;
+  opacity: var(--beam-opacity);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+}
+/* soft glow: a wider ring straddling the edge, blurred */
+.beam__ring--glow {
+  inset: calc(var(--beam-glow-spread) * -1);
+  border-radius: calc(var(--beam-radius, var(--radius-md)) + var(--beam-glow-spread));
+  padding: calc(var(--beam-glow-spread) * 2);
+  opacity: var(--beam-glow-opacity);
+}
+.beam__spin {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 200%;            /* a square wider than the element's diagonal (fine for wide elements) */
+  aspect-ratio: 1;
+  background: conic-gradient(
+    transparent 0deg,
+    transparent calc(360deg - var(--beam-length)),
+    color-mix(in srgb, var(--beam-tail) 0%, transparent) calc(360deg - var(--beam-length)),
+    var(--beam-tail) calc(360deg - var(--beam-length) * 0.45),
+    var(--beam-head) 354deg,
+    transparent 360deg
+  );
+  transform: translate(-50%, -50%) rotate(0turn);
+  animation: beam-spin var(--duration-beam-loop) linear var(--beam-phase, 0s) infinite;
+  will-change: transform;
+}
+.beam__ring--glow .beam__spin { filter: blur(var(--beam-glow-blur)); }
+@keyframes beam-spin {
+  to { transform: translate(-50%, -50%) rotate(1turn); }
+}
+html[data-hidden] .beam__spin { animation-play-state: paused; }
+
+/* reduce motion (or .beam--static): a static soft border in the head color */
+.beam--static .beam__spin { animation: none; background: var(--beam-head); }
+.beam--static .beam__ring { opacity: var(--beam-static-opacity); }
+.beam--static .beam__ring--glow { opacity: calc(var(--beam-static-opacity) * 0.5); }
+@media (prefers-reduced-motion: reduce) {
+  .beam__spin { animation: none; background: var(--beam-head); }
+  .beam__ring { opacity: var(--beam-static-opacity); }
+  .beam__ring--glow { opacity: calc(var(--beam-static-opacity) * 0.5); }
 }

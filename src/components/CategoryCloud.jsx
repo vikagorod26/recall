@@ -4,7 +4,10 @@ import { Icon } from "./Icon.jsx";
 import { categories, categoryById } from "../lib/content.js";
 import { readMotionTokens } from "../lib/motionTokens.js";
 
-// Onboarding category picker: big pill chips, loosely packed, a few tilted.
+// Big pill chip clouds: the onboarding category picker (`CategoryCloud`,
+// multi-select, category colors) and any other pick-from-a-cloud question
+// (`ChipCloud`, e.g. the "why play?" reasons: single-select, brand purple).
+// Chips are loosely packed, a few tilted.
 // On open they fall in one after another and land with a small bounce.
 // Selecting fills a chip with its category color and draws a checkmark in;
 // the label slides over while the chip's edge and its neighbours spring to
@@ -25,15 +28,25 @@ function shuffle(list) {
   return a;
 }
 
-export function CategoryCloud({ selected, onChange, labelledBy, fall = true }) {
+const CATEGORY_OPTIONS = categories.map(c => ({ id: c.id, label: c.label, icon: c.icon, category: c.id }));
+
+export function CategoryCloud(props) {
+  return <ChipCloud options={CATEGORY_OPTIONS} {...props} />;
+}
+
+// options: [{ id, label, icon, category? }]. `multiple` = toggle chips;
+// otherwise single-select (radio semantics). `tone="brand"` = brand purple.
+// `gatherTo` ({x, y} in viewport px): leave the screen — selected chips fly
+// there, shrink, glow and dissolve; the others fade out (see tokens: gather).
+export function ChipCloud({ options, selected, onChange, multiple = true, tone, labelledBy, fall = true, gatherTo = null }) {
   const reduce = !!useReducedMotion();
   const [t] = useState(readMotionTokens);
   // Per open: random tilt for some chips, slightly different widths, random fall order.
   const [looks] = useState(() => {
-    const order = shuffle(categories.map((_, i) => i));
-    return categories.map((_, i) => {
+    const order = shuffle(options.map((_, i) => i));
+    return options.map((_, i) => {
       const tilted = Math.random() < t.chip.tiltShare;
-      const angle = (0.4 + Math.random() * 0.6) * t.chip.tiltMax * (Math.random() < 0.5 ? -1 : 1);
+      const angle = (t.chip.tiltMin + Math.random() * (1 - t.chip.tiltMin)) * t.chip.tiltMax * (Math.random() < 0.5 ? -1 : 1);
       return {
         tilt: tilted ? angle : 0,
         pad: PADS[Math.floor(Math.random() * PADS.length)],
@@ -46,17 +59,22 @@ export function CategoryCloud({ selected, onChange, labelledBy, fall = true }) {
   const toggle = id => {
     vibrate(t.chip.haptic);
     const on = selected.includes(id);
-    onChange(categories.map(c => c.id).filter(c => (c === id ? !on : selected.includes(c))));
+    if (!multiple) return onChange(on ? [] : [id]);
+    onChange(options.map(o => o.id).filter(o => (o === id ? !on : selected.includes(o))));
   };
 
   return (
-    <div className="cloud" role="group" aria-labelledby={labelledBy}>
-      {categories.map((c, i) => (
+    <div className="cloud" role={multiple ? "group" : "radiogroup"} aria-labelledby={labelledBy}>
+      {options.map((o, i) => (
         <CloudChip
-          key={c.id}
-          categoryId={c.id}
-          selected={selected.includes(c.id)}
-          onToggle={() => toggle(c.id)}
+          key={o.id}
+          gatherTo={gatherTo}
+          gatherIndex={selected.indexOf(o.id)}
+          option={o}
+          tone={tone}
+          radio={!multiple}
+          selected={selected.includes(o.id)}
+          onToggle={() => toggle(o.id)}
           look={looks[i]}
           fall={fall}
           t={t}
@@ -68,10 +86,19 @@ export function CategoryCloud({ selected, onChange, labelledBy, fall = true }) {
 }
 
 // One chip. Also used on its own in the styleguide (`pressed` forces the pressed look).
-export function CloudChip({ categoryId, selected, onToggle, look = { tilt: 0, pad: PADS[1], delay: 0, spin: 0 }, fall = false, pressed = false, t = readMotionTokens(), reduce = false }) {
-  const c = categoryById[categoryId];
+export function CloudChip({ option, categoryId, tone, radio = false, selected, onToggle, look = { tilt: 0, pad: PADS[1], delay: 0, spin: 0 }, fall = false, pressed = false, t = readMotionTokens(), reduce = false, gatherTo = null, gatherIndex = -1 }) {
+  const c = option ?? { id: categoryId, label: categoryById[categoryId].label, icon: categoryById[categoryId].icon, category: categoryId };
   const SLOT = t.chip.checkSlot;
+  const button = useRef(null);
   const body = useRef(null);
+
+  // leaving: measure once, then fly from here to the gather point
+  const [gather, setGather] = useState(null);
+  useLayoutEffect(() => {
+    if (!gatherTo || !button.current) return;
+    const r = button.current.getBoundingClientRect();
+    setGather({ x: gatherTo.x - (r.left + r.width / 2), y: gatherTo.y - (r.top + r.height / 2) });
+  }, [gatherTo]);
   const width = useRef(null);
 
   // `lag`: how far the visible edge trails the real width. It jumps by the
@@ -121,24 +148,42 @@ export function CloudChip({ categoryId, selected, onToggle, look = { tilt: 0, pa
       ? { opacity: 0, y: 0, rotate: look.tilt, scale: 1 }
       : { opacity: 0, y: -t.chip.dropDistance, rotate: look.tilt + look.spin, scale: 1 };
 
+  const g = t.gather;
+  const leaving = !!gatherTo;
+  let target = { opacity: 1, y: 0, rotate: look.tilt, scale };
+  let transition = {
+    y: reduce ? { duration: 0 } : drop,
+    rotate: reduce ? { duration: 0 } : drop,
+    opacity: reduce ? { duration: t.chip.fade, delay: look.delay } : { duration: t.chip.dropFade, ease: t.easeOut, delay: look.delay },
+    scale: reduce ? { duration: 0 } : t.chip.select,
+    layout: reduce ? { duration: 0 } : t.chip.morph,
+  };
+  if (leaving && (reduce || !selected || !gather)) {
+    target = { ...target, opacity: 0, scale: reduce ? scale : scale * g.fadeScale };
+    transition = { default: { duration: g.fade, ease: t.easeOut } };
+  } else if (leaving) {
+    const tween = { duration: g.duration, ease: g.ease, delay: Math.max(0, gatherIndex) * g.stagger };
+    target = { x: gather.x, y: gather.y, rotate: 0, scale: g.scale, opacity: [1, 1, 0] };
+    transition = { default: tween, opacity: { ...tween, times: [0, 0.55, 1] } };
+  }
+
   return (
     <motion.button
       type="button"
-      className={`cat-chip${pressed ? " is-pressed" : ""}`}
-      data-category={categoryId}
-      aria-pressed={selected}
+      ref={button}
+      className={`cat-chip${pressed ? " is-pressed" : ""}${leaving && selected && !reduce ? " is-gathering" : ""}`}
+      disabled={leaving || undefined}
+      data-category={tone ? undefined : c.category}
+      data-tone={tone}
+      role={radio ? "radio" : undefined}
+      aria-checked={radio ? selected : undefined}
+      aria-pressed={radio ? undefined : selected}
       onClick={onToggle}
       layout="position"
       initial={initial}
-      animate={{ opacity: 1, y: 0, rotate: look.tilt, scale }}
-      whileTap={reduce ? undefined : { scale: t.chip.pressScale }}
-      transition={{
-        y: reduce ? { duration: 0 } : drop,
-        rotate: reduce ? { duration: 0 } : drop,
-        opacity: reduce ? { duration: t.chip.fade, delay: look.delay } : { duration: t.chip.dropFade, ease: t.easeOut, delay: look.delay },
-        scale: reduce ? { duration: 0 } : t.chip.select,
-        layout: reduce ? { duration: 0 } : t.chip.morph,
-      }}
+      animate={target}
+      whileTap={reduce || leaving ? undefined : { scale: t.chip.pressScale }}
+      transition={transition}
       style={{ "--chip-pad": look.pad }}
     >
       <span ref={body} className="cat-chip__body" data-selected={selected}>

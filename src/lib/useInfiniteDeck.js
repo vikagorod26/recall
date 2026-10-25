@@ -7,6 +7,9 @@ import { load, save } from "./storage.js";
 // waiting in the queue are moved to the end of that round so nothing shows
 // twice in a row. With `persistKey`, tips seen in earlier visits are skipped
 // until the round is complete.
+// `lead`: tips dealt first, in random order, before the shuffle bag (used for
+// the tips of the chosen "why play?" reason). They're shown once per change
+// and don't count toward the round.
 
 const LOOKAHEAD = 3; // top card + 2 behind it
 
@@ -29,10 +32,14 @@ function topUp(queue, poolIds) {
   return q;
 }
 
-export function useInfiniteDeck(pool, { persistKey } = {}) {
+export function useInfiniteDeck(pool, { persistKey, lead = [] } = {}) {
   const poolIds = useMemo(() => pool.map(t => t.id), [pool]);
-  const byId = useMemo(() => Object.fromEntries(pool.map(t => [t.id, t])), [pool]);
-  const poolKey = poolIds.join(",");
+  const leadKey = lead.map(t => t.id).join(",");
+  const byId = useMemo(
+    () => Object.fromEntries([...pool, ...lead].map(t => [t.id, t])),
+    [pool, leadKey],
+  );
+  const poolKey = poolIds.join(",") + "|" + leadKey;
 
   const init = () => {
     const inPool = new Set(poolIds);
@@ -40,7 +47,8 @@ export function useInfiniteDeck(pool, { persistKey } = {}) {
     if (seen.length >= poolIds.length) seen = [];
     const seenSet = new Set(seen);
     const unseen = shuffle(poolIds.filter(id => !seenSet.has(id)));
-    return { poolKey, seen, queue: topUp(unseen, poolIds) };
+    const leadIds = shuffle(lead.map(t => t.id).filter(id => !inPool.has(id)));
+    return { poolKey, seen, queue: [...leadIds, ...topUp(unseen, poolIds)] };
   };
 
   const [state, setState] = useState(init);
@@ -51,7 +59,8 @@ export function useInfiniteDeck(pool, { persistKey } = {}) {
   const advance = useCallback(() => {
     setState(s => {
       const [shown, ...rest] = s.queue;
-      let seen = s.seen.includes(shown) ? s.seen : [...s.seen, shown];
+      const counts = poolIds.includes(shown) && !s.seen.includes(shown);
+      let seen = counts ? [...s.seen, shown] : s.seen;
       if (seen.length >= poolIds.length) seen = []; // round complete
       if (persistKey) save(persistKey, seen);
       return { ...s, seen, queue: topUp(rest, poolIds) };

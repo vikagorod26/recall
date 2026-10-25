@@ -114,11 +114,16 @@
     .sg-state__label code { color: var(--color-text-subtle); }
 
     /* live example sized like a phone screen */
+    /* live main-screen example: same side margins as the app (--gutter-deck) */
     .sg-screen {
-      display: grid; grid-template-rows: 1fr auto auto; gap: var(--space-4);
+      display: grid; grid-template-rows: minmax(0, 1fr) auto auto; gap: var(--space-4);
       height: 720px;
-      padding: var(--space-4) 0;
+      padding: var(--space-4) calc(var(--gutter-deck) - var(--gutter));
     }
+    .sg-gather-wrap { display: grid; gap: var(--space-3); }
+    .sg-gather { position: relative; display: grid; height: 560px; padding: var(--space-4) calc(var(--gutter-deck) - var(--gutter)); border-radius: var(--radius-lg); border: var(--border-hairline) solid var(--color-line); overflow: hidden; }
+    .sg-gather .cloud { align-self: center; }
+    .sg-gather .deck-area { height: 100%; }
     .sg-progress { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-3); margin-bottom: var(--space-4); }
     .sg-progress__item { display: grid; justify-items: center; gap: var(--space-2); padding: var(--space-4) 0 var(--space-3); border-radius: var(--radius-md); background: var(--color-surface); border: var(--border-hairline) solid var(--color-border); color: var(--color-text-muted); font-size: var(--text-small); }
     .sg-progress-live { display: grid; justify-items: center; gap: var(--space-2); color: var(--color-text-subtle); font-size: var(--text-small); }
@@ -136,9 +141,9 @@
     .sg-chip-state > span { color: var(--color-text-muted); font-size: var(--text-small); }
     .sg-chip-all { justify-content: flex-start; }
     .sg-cloud { display: grid; gap: var(--space-4); min-height: 420px; padding: var(--space-4) 0; overflow: hidden; }
+    .sg-beam-box { position: relative; --beam-radius: var(--radius-lg); --beam-inset: var(--border-hairline); display: grid; place-items: center; height: 120px; border-radius: var(--radius-lg); background: var(--color-surface); border: var(--border-hairline) solid var(--color-border); color: var(--color-text-muted); font-size: var(--text-small); }
     .sg-rules { margin: 0; padding-left: var(--space-5); display: grid; gap: var(--space-2); color: var(--color-text-muted); font-size: var(--text-small); line-height: var(--leading-small); }
     .sg-rules strong { color: var(--color-text); font-weight: var(--weight-medium); }
-    .q { margin: 0 0 var(--space-4); font-family: var(--font-display); font-weight: 700; font-size: var(--text-h2); line-height: var(--leading-h2); letter-spacing: var(--tracking-tight); }
 
     .sg-footer { margin-top: var(--space-16); padding-top: var(--space-6); border-top: var(--border-hairline) solid var(--color-line); color: var(--color-text-subtle); font-size: var(--text-small); }
   </style>
@@ -191,7 +196,7 @@
   <!-- 03 SPACING & RADIUS -->
   <section class="sg-section" aria-labelledby="s-space">
     <h2 class="sg-h label" id="s-space">03 · Spacing &amp; radius</h2>
-    <p class="sg-note">4px base. Screen gutter = <code>--space-4</code> (16px).</p>
+    <p class="sg-note">4px base. Screen gutters: <code>--gutter</code> = 16px on scrolling screens (onboarding, settings); <code>--gutter-deck</code> = <code>--space-7</code> (28px) on the main screen, shared by the header, reason row, deck, swipe hint and "Tip of the day", so the cards fanned out behind the deck always keep about 16px from the screen edge.</p>
     <div class="space-list" id="space-list"></div>
 
     <h3 class="sg-sub">Radius</h3>
@@ -238,15 +243,16 @@
 
     <h4 class="sg-sub sg-sub--sm">Usage rules</h4>
     <ul class="sg-rules">
+      <li><strong>Size:</strong> the deck sits in a <code>.deck-area</code> on a screen with <code>--gutter-deck</code> margins. The card keeps <code>--card-aspect</code> (width / height 0.78) and is centered in any spare height. Cards behind are offset and rotated by <code>--deck-1-*</code> / <code>--deck-2-*</code> (about 12px of overhang). Under 375px wide the title drops to <code>--text-tip-narrow</code> (34px) with tighter padding.</li>
       <li><strong>Content:</strong> category tag (category color + icon), title in Sora, subtext in Inter. Glassy dark card, 2 cards visible behind it.</li>
       <li><strong>Tip of the day</strong> is its own block under the deck. Never inside a card.</li>
       <li><strong>Both directions = next tip.</strong> No like/dislike, no labels or icons while dragging, no green/red.</li>
       <li><strong>Drag glow</strong> uses the card's category color, same for left and right, and grows with the drag (<code>--swipe-glow-*</code>).</li>
-      <li><strong>Next card:</strong> cards are see-through glass (<code>--color-surface-glass</code>, 50%). Cards waiting behind show only their edge; the next one fades its content in as the top card is dragged, and back out if the drag snaps back.</li>
+      <li><strong>Next card:</strong> cards are see-through glass (<code>--color-surface-glass</code>, 50%). Cards waiting behind show only their edge; the next one fades its content in as the top card is dragged, and back out if the drag snaps back. At rest the top card sits on a solid backing (<code>--swipe-card-rest-solid</code>) so its text stays readable; the backing fades out with the drag, reaching full see-through at the swipe threshold.</li>
       <li><strong>Swipe counts</strong> past <code>--swipe-threshold</code> of the card width, or on a fast flick. Shorter drags snap back.</li>
       <li><strong>Infinite deck:</strong> only the categories picked in onboarding, random order, no repeats until every tip was shown, never runs out.</li>
       <li><strong>Keys:</strong> cards are keyed by tip id, never by array index.</li>
-      <li><strong>Mobile:</strong> card fills most of the screen with the 16px gutter; the page doesn't scroll or bounce while swiping (<code>lockScroll</code>); short vibration on a successful swipe where supported.</li>
+      <li><strong>Mobile:</strong> card fills most of the screen inside the 28px <code>--gutter-deck</code>; the page doesn't scroll or bounce while swiping (<code>lockScroll</code>); short vibration on a successful swipe where supported.</li>
       <li><strong>Reduce motion:</strong> no tilt, no fly-out or shift animation; the next tip just appears.</li>
     </ul>
 
@@ -255,25 +261,41 @@
 
     <h3 class="sg-sub">Buttons</h3>
     <div class="stack">
-      <button class="btn btn--primary" type="button">Give me something else</button>
-      <button class="btn btn--secondary" type="button">I'm already in queue</button>
-      <button class="btn btn--primary" type="button" disabled>Disabled</button>
+      <button class="btn btn--primary" type="button">Continue</button>
+      <button class="btn btn--secondary" type="button">Reset app</button>
+      <button class="btn btn--primary" type="button" disabled>Show me tips</button>
     </div>
 
-    <h3 class="sg-sub">Onboarding chips</h3>
-    <p class="sg-note">Multi-select. Selected = brand outline, soft fill, check icon. Tap to toggle.</p>
-    <p class="q">Why do you want to play?</p>
+    <h3 class="sg-sub">Selection chips (small)</h3>
+    <p class="sg-note">Compact toggle chips for lists and filters: the Settings category picker and the filters on the tips review page. Selected = brand outline, soft fill, check icon. Tap to toggle. Onboarding and the "why play?" sheet use the big cloud chips instead.</p>
     <div class="chips" id="chips">
-      <button class="chip" type="button" aria-pressed="true"><svg class="icon chip__check"><use href="./icons.svg#check"/></svg>Tilted</button>
-      <button class="chip" type="button" aria-pressed="false"><svg class="icon chip__check"><use href="./icons.svg#check"/></svg>Bored</button>
-      <button class="chip" type="button" aria-pressed="true"><svg class="icon chip__check"><use href="./icons.svg#check"/></svg>Friends are calling</button>
-      <button class="chip" type="button" aria-pressed="false"><svg class="icon chip__check"><use href="./icons.svg#check"/></svg>Event FOMO</button>
-      <button class="chip" type="button" aria-pressed="false"><svg class="icon chip__check"><use href="./icons.svg#check"/></svg>Just habit</button>
+      <button class="chip" type="button" aria-pressed="true"><svg class="icon chip__check"><use href="./icons.svg#check"/></svg>All</button>
+      <button class="chip" type="button" aria-pressed="false"><svg class="icon chip__check"><use href="./icons.svg#check"/></svg>League refs</button>
+      <button class="chip" type="button" aria-pressed="false"><svg class="icon chip__check"><use href="./icons.svg#check"/></svg>No League refs</button>
     </div>
 
     <h3 class="sg-sub">Splash</h3>
     <p class="sg-note">Shown on every launch: only the "Recall." wordmark (Sora, <code>--text-splash</code>), centered on the app background (<code>--color-bg</code>, same as the first HTML frame and the future PWA launch screen, so there's no white flash). Fades and glows in over <code>--duration-splash-in</code>, stays <code>--duration-splash-first</code> on first launch (then onboarding) or <code>--duration-splash-return</code> later (then the main screen), fades out over <code>--duration-splash-out</code> on top of the next screen. Tap (or Enter / Space / Esc) skips it. Reduce motion: plain fade, no scaling or growing glow. <code>Splash.jsx</code></p>
     <div class="sg-splash" id="splash-demo"></div>
+
+    <h3 class="sg-sub">Tip of the day · border beam</h3>
+    <p class="sg-note">"Tip of the day" sits under the deck with a thin beam of light travelling around its rounded border: brand purple at the head (<code>--beam-head</code>), fading into the lighter accent at the tail (<code>--beam-tail</code>). Subtle on purpose: a <code>--beam-width</code> line at <code>--beam-opacity</code>, a soft glow (<code>--beam-glow-*</code>), one loop every <code>--duration-beam-loop</code>, covering <code>--beam-length</code> of the loop. It draws the eye without competing with the deck. The loop follows the clock, so a new tip (or coming back from settings) never restarts it. Pauses when the app is in the background. Reduce motion: static soft purple border (<code>--beam-static-opacity</code>). <code>Beam.jsx</code></p>
+    <div class="stack" id="beam-daily"></div>
+    <h4 class="sg-sub sg-sub--sm">Reduce motion</h4>
+    <div id="beam-static"></div>
+    <h4 class="sg-sub sg-sub--sm">Reuse on another element</h4>
+    <p class="sg-note">Put <code>&lt;Beam /&gt;</code> inside any <code>position: relative</code> element and set <code>--beam-radius</code> to its border radius (and <code>--beam-inset</code> to its border width, if it has one). The ring is masked to the radius, so it follows the corners exactly and is never clipped (the element must not use <code>overflow: hidden</code> if the glow should show outside it).</p>
+    <div class="sg-beam-box" id="beam-reuse"></div>
+
+    <h3 class="sg-sub">Screen transition · gather into the deck</h3>
+    <p class="sg-note">Used from the category picker to the main screen; reuse it for any change that lands on the deck (for example settings back to the main screen). Under one second in total; the background stays <code>--color-bg</code> throughout.</p>
+    <ul class="sg-rules">
+      <li><strong>Out (about 0.45s):</strong> headline, back button and Continue fade over <code>--duration-gather-fade</code>; unselected chips fade and shrink slightly; selected chips fly to the deck spot one after another (<code>--gather-stagger</code>), shrink to <code>--gather-scale</code>, glow in their category color (<code>--gather-glow</code>) and dissolve, over <code>--duration-gather</code> with <code>--ease-gather</code>.</li>
+      <li><strong>In (about 0.45s):</strong> the top card rises <code>--rise-distance</code> on a gentle spring (<code>--spring-rise-*</code>), the cards behind fan out after it <code>--rise-stagger</code> apart, and the header, reason row, hint and "Tip of the day" fade in a beat later (<code>--duration-screen-in</code>). <code>--duration-rise-settle</code> marks the end; the "why play?" sheet waits for it.</li>
+      <li><strong>Reduce motion:</strong> plain crossfade, nothing moves.</li>
+      <li><strong>Code:</strong> <code>ChipCloud gatherTo</code> for the out part, <code>SwipeDeck rise</code> plus <code>.app--enter</code> for the in part.</li>
+    </ul>
+    <div class="sg-gather-wrap" id="gather-demo"></div>
 
     <h3 class="sg-sub">Onboarding intro</h3>
     <p class="sg-note">Three swipeable intro screens: graphic in the top half, headline (Sora, <code>--text-tip</code>), subtext (Inter). A progress button moves forward and fills its ring a third per screen; "Skip" jumps to the category picker. <code>IntroCarousel.jsx</code></p>
@@ -301,8 +323,24 @@
     <p class="sg-note">Chips fall from <code>--chip-drop-distance</code> above in random order, <code>--chip-drop-stagger</code> apart, fading in over <code>--chip-drop-fade</code>, and settle softly with one small overshoot (<code>--spring-drop-*</code>, damping ratio about 0.76), all within about 0.65s. Some chips get a random tilt up to <code>--chip-tilt-max</code> (<code>--chip-tilt-share</code> of them). Reduce motion: a simple fade (<code>--duration-chip-fade</code>). Tap chips to select.</p>
     <div class="sg-cloud" id="chip-cloud"></div>
 
+    <h3 class="sg-sub">Bottom sheet</h3>
+    <p class="sg-note">Reusable sheet over the current screen (<code>BottomSheet.jsx</code>). Slides up on a spring (<code>--spring-sheet-*</code>) over a dimmed, slightly blurred backdrop (<code>--sheet-backdrop*</code>), so the screen stays visible behind it. Glassy dark surface like the tip cards, rounded top corners (<code>--radius-sheet</code>), grab handle. Closes by dragging down past <code>--sheet-close-threshold</code> of its height (or a flick), tapping the backdrop, Escape, or the phone's back button (it adds a history entry, so back closes the sheet, not the app). While open, everything behind it is inert: no taps, no swipes. Reduce motion: plain fade (<code>--duration-sheet-fade</code>). Optional <code>footer</code>: a pinned primary action that never scrolls away. <code>onExited</code> fires when the closing spring has finished, so the screen behind changes only after the sheet is gone.</p>
+    <h4 class="sg-sub sg-sub--sm">Confirm button (footer)</h4>
+    <p class="sg-note">Primary button "Show me tips", full width. Disabled until a reason is selected. Tapping it closes the sheet with the same spring it opened with and applies the reason; swipe down, backdrop and back close it as a skip.</p>
+    <div class="sg-chip-states" id="sheet-footer-states"></div>
+    <h4 class="sg-sub sg-sub--sm">Live</h4>
+    <div class="stack" id="sheet-demo"></div>
+
+    <h3 class="sg-sub">Reason chips · brand tone</h3>
+    <p class="sg-note">The category cloud chip with <code>tone="brand"</code>, single-select (radio semantics). Brand purple instead of a category color, white text when selected (dark text on brand purple would only be 4.2:1). Same fall-in, press and checkmark animations. Tapping a chip only selects it (tap another to change your mind); the earlier answer starts preselected.</p>
+    <div class="cloud sg-chip-all" id="reason-chips"></div>
+
+    <h3 class="sg-sub">Reason pill &amp; reaction line</h3>
+    <p class="sg-note">Pill button above the deck (<code>.pill-btn</code>, 36px tall, 44px tap target): "Why play?" when no reason is set, the reason in brand style when it is. Tapping it opens the reason sheet. The reaction line (<code>.reaction</code>, Inter 400, 15px, muted text) appears under it once a reason is picked: a quiet aside, so the tip card stays the main thing on screen.</p>
+    <div class="sg-chip-states" id="reason-pill"></div>
+
     <h3 class="sg-sub">Category picker</h3>
-    <p class="sg-note">Onboarding and settings. Chips in two even columns: category icon in its color, label, check when selected. Order follows <code>content.json</code>. In settings (<code>keepOne</code>) the last selected chip can't be turned off. <code>CategoryPicker.jsx</code></p>
+    <p class="sg-note">Settings (onboarding uses the category cloud). Small chips in two even columns: category icon in its color, label, check when selected. Order follows <code>content.json</code>. In settings (<code>keepOne</code>) the last selected chip can't be turned off. <code>CategoryPicker.jsx</code></p>
     <div id="category-picker"></div>
 
     <h3 class="sg-sub">Icon button &amp; screen header</h3>

@@ -12,23 +12,19 @@ body:has(.app) {
 
 .app {
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto auto;
+  grid-template-rows: auto auto minmax(0, 1fr) auto auto;
   gap: var(--space-4);
   height: 100dvh;
   max-width: var(--layout-max);
   margin: 0 auto;
   padding:
     calc(var(--space-4) + env(safe-area-inset-top))
-    calc(var(--gutter) + env(safe-area-inset-right))
+    calc(var(--gutter-deck) + env(safe-area-inset-right))
     calc(var(--space-4) + env(safe-area-inset-bottom))
-    calc(var(--gutter) + env(safe-area-inset-left));
+    calc(var(--gutter-deck) + env(safe-area-inset-left));
 }
 
-/* room under the deck for the cards fanned out behind it */
-.app__deck {
-  min-height: 0;
-  padding-bottom: var(--space-6);
-}
+
 
 .app__hint { margin: 0; }
 
@@ -46,7 +42,6 @@ body:has(.app) {
     0
     calc(var(--gutter) + env(safe-area-inset-left));
 }
-.screen__body { display: grid; gap: var(--space-4); align-content: start; }
 .screen__title {
   margin: 0;
   font-family: var(--font-display);
@@ -112,3 +107,35 @@ body:has(.intro:not(.intro--framed)) {
   .picker .cat-chip__body { height: var(--tap-min); }
 }
 .section-label + .settings-note { margin-top: 0; }
+
+/* reason chip + reaction line, between the top bar and the deck */
+.app__reason { display: grid; justify-items: start; gap: var(--space-2); }
+@media (max-height: 700px) {
+  .app .reaction { font-size: var(--text-small); line-height: var(--leading-small); }
+}
+
+/* screens fade in when they appear (e.g. onboarding -> main), then the sheet slides up */
+.app, .screen { animation: screen-in var(--duration-screen-in) var(--ease-out) both; }
+@keyframes screen-in { from { opacity: 0; } }
+.app__reaction { overflow: hidden; }
+
+/* ---- Transition: category picker -> main screen ("gather into the deck") ---
+   Picker: headline, back button and Continue fade out while the chips gather. */
+.picker.is-leaving .top-bar,
+.picker.is-leaving .picker__head,
+.picker.is-leaving .screen__actions {
+  opacity: 0;
+  transition: opacity var(--duration-gather-fade) var(--ease-out);
+}
+.picker.is-leaving { pointer-events: none; }
+@media (prefers-reduced-motion: reduce) {
+  /* reduce motion: the whole picker simply fades (crossfade with the main screen) */
+  .picker.is-leaving { opacity: 0; transition: opacity var(--duration-gather-fade) var(--ease-out); }
+}
+
+/* Main screen entering after the gather: the deck rises on its own (SwipeDeck),
+   the rest fades in a beat later */
+.app--enter { animation: none; }
+.app--enter > :not(.app__deck) {
+  animation: screen-in var(--duration-screen-in) var(--ease-out) var(--rise-stagger) both;
+}
