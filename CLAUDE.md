@@ -96,6 +96,13 @@ npm run dev
 
 Pages: `/` (main screen), `/styleguide.html`, `/tips-review.html`. `npm run build` then `npm run preview` checks the production build.
 
+## Publishing
+
+- Live app: **https://vikagorod26.github.io/recall/** · repository: https://github.com/vikagorod26/recall (public).
+- To publish changes: commit and `git push` to `main`. The "Deploy to GitHub Pages" workflow builds and deploys in about 30 seconds (`gh run list` shows it). Users get the new version on their next launch (service worker auto-update).
+- Commits use the GitHub noreply email (repo-local `git config user.email`), so the owner's real email never lands in the public history. Keep it that way.
+- After deploying, test the live URL, not just `npm run dev`: the production build minifies CSS (e.g. `2000ms` becomes `2s`), which only shows up there. `src/lib/motionTokens.js` reads both `ms` and `s` for this reason.
+
 ## Content files
 
 - [src/content.json](src/content.json) is the single source of all tip text: categories, 20 tips per category (title ≤ 6 words, text ≤ 15 words, `minutes` ≤ 27, `league` flag, ~half `true`), and `tipsOfTheDay` with `starts`/`expires` (inclusive) plus a `fact` noting what each is based on. Pages never hard-code tip text; they import it through `src/lib/content.js` (the review page imports the JSON directly).
